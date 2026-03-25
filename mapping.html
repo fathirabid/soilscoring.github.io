@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapping | SoilSense Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div class="sidebar-content">
+                <a href="index.html" class="logo-link">
+                    <div class="logo"><span class="icon">🌿</span><span class="text">SoilSense</span></div>
+                </a>
+                
+                <div class="datetime-wrapper">
+                    <div id="clock">00:00:00</div>
+                    <div id="date">Memuat tanggal...</div>
+                </div>
+
+                <nav>
+                    <a href="index.html"><i data-feather="grid"></i> Dashboard</a>
+                    <a href="history.html"><i data-feather="activity"></i> History</a>
+                    <a href="mapping.html" class="active"><i data-feather="map"></i> Mapping</a>
+                    <a href="setting.html"><i data-feather="settings"></i> Settings</a>
+                    <a href="about.html"><i data-feather="info"></i> About Us</a>
+                </nav>
+            </div>
+            
+            
+            <div class="sidebar-footer">
+                <div id="guest-view">
+                    <button onclick="showLogin()" class="btn-login-main">
+                        <i data-feather="user"></i><span>Masuk Admin</span>
+                    </button>
+                </div>
+                <div id="admin-view" style="display: none;">
+                    <div class="user-profile">
+                        <div class="avatar"><img src="https://ui-avatars.com/api/?name=Admin+Lahan&background=2ecc71&color=fff" alt="User"></div>
+                        <div class="user-info">
+                            <span class="user-name">Akun Admin</span>
+                            <span class="user-status">Online</span>
+                        </div>
+                    </div>
+                    <button onclick="handleLogout()" class="btn-logout">
+                        <i data-feather="log-out"></i><span>Keluar Sistem</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="loginModal" class="modal-overlay">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>🌿 Admin Login</h2>
+                        <p>Gunakan akun admin untuk akses sistem</p>
+                    </div>
+                    <form id="loginForm">
+                        <div class="input-group">
+                            <label>Username</label>
+                            <div class="username-wrapper">
+                                <input type="text" id="loginUser" placeholder="Masukkan Username" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="loginPass" placeholder="Masukkan Password" required>
+                                <button type="button" id="togglePassword" class="toggle-btn">
+                                    <i data-feather="eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit">Masuk Sekarang</button>
+                        <button type="button" onclick="closeLogin()" class="btn-cancel">Batal</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="logoutModal" class="modal-overlay">
+                <div class="modal-content logout-box">
+                    <div class="modal-header">
+                        <div class="icon-warning">⚠️</div>
+                        <h2>Konfirmasi Keluar</h2>
+                        <p>Apakah Anda yakin ingin mengakhiri sesi admin dan keluar dari sistem?</p>
+                    </div>
+                    <div class="modal-footer-btns">
+                        <button type="button" onclick="confirmLogout()" class="btn-confirm-logout">Ya, Keluar</button>
+                        <button type="button" onclick="closeLogoutModal()" class="btn-cancel">Batal</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statusModal" class="modal-overlay">
+                <div class="modal-content status-box">
+                    <div id="statusIcon" class="status-icon"></div>
+                    <h2 id="statusTitle"></h2>
+                    <p id="statusMessage"></p>
+                    <div class="loader-line"></div> 
+                </div>
+            </div>
+
+            <div id="toast" class="toast-container">
+                <div class="toast-content">
+                    <div id="toast-icon"></div>
+                    <div class="toast-text">
+                        <span id="toast-title"></span>
+                        <span id="toast-msg"></span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="header-title">
+                    <h1>Pemetaan Lahan (GIS)</h1>
+                    <p>Distribusi dan pantauan lokasi sensor secara geografis</p>
+                </div>
+            </header>
+
+            <div id="guest-warning" style="text-align: center; padding: 60px 20px; background: white; border-radius: 20px; box-shadow: var(--shadow);">
+                <i data-feather="map-pin" style="width: 60px; height: 60px; color: #95a5a6; margin-bottom: 20px;"></i>
+                <h2 style="color: var(--dark); margin-bottom: 10px;">Akses Peta Dibatasi</h2>
+                <p style="color: #7f8c8d; margin-bottom: 25px;">Data koordinat lahan bersifat rahasia. Silakan masuk sebagai admin.</p>
+                <button onclick="showLogin()" class="btn-login-main" style="max-width: 250px; margin: 0 auto;">Buka Peta Lahan</button>
+            </div>
+
+            <div class="box map-container" id="map-content-box" style="display: none;">
+                
+                <div class="map-header-bar">
+                    <h3 style="font-size: 15px; font-weight: 700; margin: 0; color: #334155; display: flex; align-items: center; gap: 8px;">
+                        <i data-feather="navigation" style="width:18px; color: var(--primary);"></i> Titik Koordinat Prototype
+                    </h3>
+                    <span id="map-status-badge" class="badge-status badge-warn">Menghubungkan...</span>
+                </div>
+
+                <div id="soilMap"></div>
+
+                <div class="map-hud-overlay" id="map-hud">
+                    <div class="hud-header">
+                        <h4>Live Telemetry</h4>
+                        <div class="pulse-indicator" id="hud-pulse"></div>
+                    </div>
+                    <div class="hud-body">
+                        <div class="hud-item"><span>Skor AI</span><strong id="hud-score">-- / 100</strong></div>
+                        <div class="hud-item"><span>Status Lahan</span><strong id="hud-status" style="font-size: 12px;">Menunggu...</strong></div>
+                        <div class="hud-item"><span>pH Tanah</span><strong id="hud-ph">--</strong></div>
+                        <div class="hud-item"><span>Kelembapan</span><strong id="hud-hum">--%</strong></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <footer class="dashboard-footer">
+                    <div class="footer-content">
+                        <div class="footer-left">
+                            <p>&copy; 2026 <strong>SoilSense Team</strong>. All rights reserved.</p>
+                            <span class="version">V 1.0.2 - Prototype Stage</span>
+                        </div>
+                        <div class="footer-right">
+                            <div class="footer-links">
+                                <a href="#"><i data-feather="help-circle"></i> Bantuan</a>
+                                <a href="#"><i data-feather="file-text"></i> Dokumentasi</a>
+                                <a href="https://github.com" target="_blank"><i data-feather="github"></i> Repository</a>
+                            </div>
+                        </div>
+                    </div>
+            </footer>
+        </main>
+    </div>
+    
+    <script src="mapping.js"></script>
+</body>
+</html>
