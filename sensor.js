@@ -585,8 +585,8 @@
                 datasetValues.ph.push(data.ph); datasetValues.temp.push(data.temp); datasetValues.hum.push(data.hum); datasetValues.ec.push(data.ec);
                 multiChart.update();
 
-                // --- DATABASE KEBUTUHAN KOMODITAS (Berdasarkan Jurnal/Balittanah) ---
-                // Anda bisa mengubah angka-angka ini nanti setelah mendapat data pasti dari jurnal
+                // --- DATABASE KEBUTUHAN KOMODITAS ---
+                // masih pakai data dummy
                 const cropDatabase = [
                     { name: "Padi Sawah", phMin: 5.5, phMax: 6.5, n: 45, p: 20, k: 30 },
                     { name: "Bawang Merah", phMin: 5.6, phMax: 7.0, n: 80, p: 40, k: 40 },
@@ -652,6 +652,14 @@
                     excesses.push("pH Terlalu Basa");
                 }
 
+                // Kalkulasi Kelembapan (Humidity)
+                if (data.hum < 40) { // Batas bawah kelembapan (Bisa disesuaikan)
+                    actions.push(`Lakukan Penyiraman / Irigasi Lahan`); 
+                    warnings.push(`Kekeringan / Kelembapan Rendah (${data.hum}%)`); 
+                } else if (data.hum > 80) { // Batas atas kelembapan
+                    excesses.push(`Genangan / Kelembapan Tinggi (${data.hum}%)`);
+                }
+
                 // 2. Kalkulasi Nitrogen
                 if (data.nitrogen < batasNitrogen) { 
                     let defisitN = batasNitrogen - data.nitrogen;
@@ -694,7 +702,7 @@
                     recomText.innerHTML = `
                         <div class="recom-content">
                             <span class="recom-title"><i data-feather="zap"></i> Tindakan Korektif Prioritas</span>
-                            <div class="recom-value">Pemupukan Presisi: Segera aplikasikan <br><br> <span class="highlight" style="display:inline-block; line-height:1.8;">${fertilizers.join("<br> + ")}</span> <br><br> secara merata untuk menyeimbangkan hara tanah.</div>
+                            <div class="recom-value">Segera lakukan tindakan berikut:<br><br> <span class="highlight" style="display:inline-block; line-height:1.8;">${actions.join("<br> + ")}</span> <br><br> secara merata untuk menyeimbangkan kondisi lahan.</div>
                         </div>
                     `;
                 } 
@@ -702,12 +710,12 @@
                 else if (excesses.length > 0) {
                     analysisList.innerHTML = `
                         <li><div class="ai-icon-wrap" style="background: rgba(46,204,113,0.1); color: #2ecc71;"><i data-feather="target"></i></div><div class="ai-text"><strong>Rekomendasi Tanam:</strong><br> ${commodityText}</div></li>
-                        <li><div class="ai-icon-wrap" style="background: rgba(243,156,18,0.1); color: #f39c12;"><i data-feather="alert-octagon"></i></div><div class="ai-text"><strong>Kondisi Kritis (Toksisitas):</strong><br> Lahan kelebihan unsur <strong>${excesses.join(", ")}</strong>.</div></li>
+                        <li><div class="ai-icon-wrap" style="background: rgba(243,156,18,0.1); color: #f39c12;"><i data-feather="alert-octagon"></i></div><div class="ai-text"><strong>Kondisi Kritis (Berlebih):</strong><br> Lahan kelebihan unsur/kondisi pada <strong>${excesses.join(", ")}</strong>.</div></li>
                     `;
                     recomText.innerHTML = `
                         <div class="recom-content" style="border-left-color: #f39c12;">
-                            <span class="recom-title" style="color: #f39c12;"><i data-feather="alert-triangle"></i> Peringatan Toksisitas</span>
-                            <div class="recom-value">Lahan mengalami kelebihan unsur pada: <strong style="color:#f1c40f;">${excesses.join(", ")}</strong>.<br><br>Hentikan pemupukan dan lakukan pengairan (leaching) untuk mencegah keracunan pada tanaman.</div>
+                            <span class="recom-title" style="color: #f39c12;"><i data-feather="alert-triangle"></i> Peringatan Kondisi Berlebih</span>
+                            <div class="recom-value">Lahan mengalami kondisi berlebih pada: <strong style="color:#f1c40f;">${excesses.join(", ")}</strong>.<br><br>Hentikan pemupukan dan perbaiki tata air (drainase/leaching) untuk menormalkan lahan kembali.</div>
                         </div>
                     `;
                 } 
@@ -720,7 +728,7 @@
                     recomText.innerHTML = `
                         <div class="recom-content" style="border-left-color: #2ecc71;">
                             <span class="recom-title" style="color: #2ecc71;"><i data-feather="shield"></i> Lahan Optimal</span>
-                            <div class="recom-value">Kondisi pH dan seluruh unsur hara berada pada rentang ideal.<br><br><strong style="color:#2ecc71; font-size:18px;">Lahan Siap Tanam!</strong><br>Pertahankan kondisi ini tanpa perlu penambahan pupuk dasar.</div>
+                            <div class="recom-value">Kondisi pH, Kelembapan, dan unsur hara berada pada rentang ideal.<br><br><strong style="color:#2ecc71; font-size:18px;">Lahan Siap Tanam!</strong><br>Pertahankan kondisi ini tanpa perlu penambahan pupuk dasar.</div>
                         </div>
                     `;
                 }
