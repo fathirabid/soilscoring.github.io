@@ -638,63 +638,83 @@
                     commodityText += `🚨 <strong>Belum ada yang cocok:</strong> Perbaiki pH atau unsur hara lahan Anda terlebih dahulu berdasarkan rekomendasi sistem.`;
                 }
 
-                let fertilizers = []; 
+                let soilActions = [];  // KHUSUS untuk penanganan pH (Pembenah Tanah)
+                let waterActions = []; // KHUSUS untuk instruksi air
+                let fertActions = [];  // KHUSUS untuk daftar pupuk NPK
                 let warnings = [];
                 let excesses = []; 
 
-                // 1. Kalkulasi pH 
+                // 1. Kalkulasi pH (PEMBENAH TANAH)
                 if (data.ph < batasPH) { 
                     let gapPH = (batasPH - data.ph).toFixed(1);
                     let dosisHa = gapPH * 2000; 
-                    fertilizers.push(`Kapur Dolomit (±${hitungDosisAktual(dosisHa)})`); 
-                    warnings.push(`Asiditas Lahan Tinggi`); 
+                    soilActions.push(`Kapur Dolomit (±${hitungDosisAktual(dosisHa)})`); 
+                    warnings.push(`Asiditas Lahan Tinggi / Sangat Asam (pH ${data.ph})`); 
                 } else if (data.ph > batasPH + 1.5) { 
-                    excesses.push("pH Terlalu Basa");
+                    soilActions.push(`Taburkan Belerang (Sulfur) / Pupuk Kandang`);
+                    warnings.push(`Lahan Terlalu Basa (pH ${data.ph})`);
                 }
 
-                // Kalkulasi Kelembapan (Humidity)
-                if (data.hum < 40) { // Batas bawah kelembapan (Bisa disesuaikan)
-                    actions.push(`Lakukan Penyiraman / Irigasi Lahan`); 
+                // 2. Kalkulasi Kelembapan (MANAJEMEN AIR)
+                if (data.hum < 40) { 
+                    waterActions.push(`Segera nyalakan pompa irigasi / lakukan penyiraman lahan.`); 
                     warnings.push(`Kekeringan / Kelembapan Rendah (${data.hum}%)`); 
-                } else if (data.hum > 80) { // Batas atas kelembapan
+                } else if (data.hum > 80) { 
                     excesses.push(`Genangan / Kelembapan Tinggi (${data.hum}%)`);
                 }
 
-                // 2. Kalkulasi Nitrogen
+                // 3. Kalkulasi Nitrogen (PUPUK)
                 if (data.nitrogen < batasNitrogen) { 
                     let defisitN = batasNitrogen - data.nitrogen;
                     let dosisHa = (defisitN * 2) / 0.46;
-                    fertilizers.push(`Urea (±${hitungDosisAktual(dosisHa)})`); 
+                    fertActions.push(`Urea (±${hitungDosisAktual(dosisHa)})`); 
                     warnings.push(`Defisit Nitrogen (-${defisitN} mg/kg)`); 
                 } else if (data.nitrogen > maksNitrogen) {
-                    excesses.push("Nitrogen");
+                    excesses.push(`Nitrogen Berlebih`);
                 }
 
-                // 3. Kalkulasi Fosfor
+                // 4. Kalkulasi Fosfor (PUPUK)
                 if (data.fosfor < batasFosfor) { 
                     let defisitP = batasFosfor - data.fosfor;
                     let dosisHa = (defisitP * 2) / 0.36;
-                    fertilizers.push(`SP-36 (±${hitungDosisAktual(dosisHa)})`); 
+                    fertActions.push(`SP-36 (±${hitungDosisAktual(dosisHa)})`); 
                     warnings.push(`Defisit Fosfor (-${defisitP} mg/kg)`); 
                 } else if (data.fosfor > maksFosfor) {
-                    excesses.push("Fosfor");
+                    excesses.push(`Fosfor Berlebih`);
                 }
 
-                // 4. Kalkulasi Kalium
+                // 5. Kalkulasi Kalium (PUPUK)
                 if (data.kalium < batasKalium) { 
                     let defisitK = batasKalium - data.kalium;
                     let dosisHa = (defisitK * 2) / 0.60;
-                    fertilizers.push(`KCl (±${hitungDosisAktual(dosisHa)})`); 
+                    fertActions.push(`KCl (±${hitungDosisAktual(dosisHa)})`); 
                     warnings.push(`Defisit Kalium (-${defisitK} mg/kg)`); 
                 } else if (data.kalium > maksKalium) {
-                    excesses.push("Kalium");
+                    excesses.push(`Kalium Berlebih`);
                 }
 
                 const analysisList = document.getElementById('ai-analysis-list');
                 const recomText = document.getElementById('ai-recom-text');
                 if (analysisList) analysisList.className = 'ai-list'; 
 
-                if (fertilizers.length > 0) {
+                // SKENARIO 1: TERDAPAT KEKURANGAN ATAU MASALAH pH / AIR
+                if (soilActions.length > 0 || fertActions.length > 0 || waterActions.length > 0) { 
+                    
+                    let finalRecomHTML = "";
+                    
+                    // Tampilkan Pembenah Tanah (pH) jika ada masalah
+                    if (soilActions.length > 0) {
+                        finalRecomHTML += `<div style="margin-bottom:15px;">🪨 <strong style="color:#94a3b8;">Pembenah Tanah (Koreksi pH):</strong><br> <span style="color:#d97706; font-weight:600;">${soilActions.join("<br>")}</span></div>`;
+                    }
+                    // Tampilkan Manajemen Air jika ada masalah
+                    if (waterActions.length > 0) {
+                        finalRecomHTML += `<div style="margin-bottom:15px;">💧 <strong style="color:#94a3b8;">Manajemen Air:</strong><br> <span style="color:#38bdf8; font-weight:600;">${waterActions.join("<br>")}</span></div>`;
+                    }
+                    // Tampilkan Kebutuhan Pupuk jika ada masalah
+                    if (fertActions.length > 0) {
+                        finalRecomHTML += `<div>🌱 <strong style="color:#94a3b8;">Kebutuhan Pupuk Dasar:</strong><br> <span class="highlight" style="display:inline-block; line-height:1.8; margin-top:8px;">+ ${fertActions.join("<br> + ")}</span></div>`;
+                    }
+
                     analysisList.innerHTML = `
                         <li><div class="ai-icon-wrap" style="background: rgba(46,204,113,0.1); color: #2ecc71;"><i data-feather="target"></i></div><div class="ai-text"><strong>Rekomendasi Tanam:</strong><br> ${commodityText}</div></li>
                         <li><div class="ai-icon-wrap" style="background: rgba(231,76,60,0.1); color: #e74c3c;"><i data-feather="alert-triangle"></i></div><div class="ai-text"><strong>Terdeteksi Masalah:</strong><br> Lahan mengalami <strong>${warnings.join(", ")}</strong>.</div></li>
@@ -702,11 +722,11 @@
                     recomText.innerHTML = `
                         <div class="recom-content">
                             <span class="recom-title"><i data-feather="zap"></i> Tindakan Korektif Prioritas</span>
-                            <div class="recom-value">Segera lakukan tindakan berikut:<br><br> <span class="highlight" style="display:inline-block; line-height:1.8;">${actions.join("<br> + ")}</span> <br><br> secara merata untuk menyeimbangkan kondisi lahan.</div>
+                            <div class="recom-value" style="font-size:14.5px;">${finalRecomHTML}</div>
                         </div>
                     `;
                 } 
-                // SKENARIO 2: TIDAK ADA DEFISIT, TAPI ADA OVERDOSIS (TOKSISITAS)
+                // SKENARIO 2: TIDAK ADA KEKURANGAN, TAPI ADA KONDISI TOKSISITAS / KEBANJIRAN
                 else if (excesses.length > 0) {
                     analysisList.innerHTML = `
                         <li><div class="ai-icon-wrap" style="background: rgba(46,204,113,0.1); color: #2ecc71;"><i data-feather="target"></i></div><div class="ai-text"><strong>Rekomendasi Tanam:</strong><br> ${commodityText}</div></li>
@@ -715,7 +735,7 @@
                     recomText.innerHTML = `
                         <div class="recom-content" style="border-left-color: #f39c12;">
                             <span class="recom-title" style="color: #f39c12;"><i data-feather="alert-triangle"></i> Peringatan Kondisi Berlebih</span>
-                            <div class="recom-value">Lahan mengalami kondisi berlebih pada: <strong style="color:#f1c40f;">${excesses.join(", ")}</strong>.<br><br>Hentikan pemupukan dan perbaiki tata air (drainase/leaching) untuk menormalkan lahan kembali.</div>
+                            <div class="recom-value">Lahan mengalami kondisi berlebih pada: <strong style="color:#f1c40f;">${excesses.join(", ")}</strong>.<br><br>Hentikan pemupukan dan perbaiki tata air (drainase/leaching) untuk mencegah keracunan/pembusukan akar.</div>
                         </div>
                     `;
                 } 
@@ -728,7 +748,7 @@
                     recomText.innerHTML = `
                         <div class="recom-content" style="border-left-color: #2ecc71;">
                             <span class="recom-title" style="color: #2ecc71;"><i data-feather="shield"></i> Lahan Optimal</span>
-                            <div class="recom-value">Kondisi pH, Kelembapan, dan unsur hara berada pada rentang ideal.<br><br><strong style="color:#2ecc71; font-size:18px;">Lahan Siap Tanam!</strong><br>Pertahankan kondisi ini tanpa perlu penambahan pupuk dasar.</div>
+                            <div class="recom-value">Kondisi pH, Kelembapan, dan unsur hara berada pada rentang ideal.<br><br><strong style="color:#2ecc71; font-size:18px;">Lahan Siap Tanam!</strong><br>Pertahankan kondisi ini tanpa perlu penambahan pupuk dasar maupun amelioran.</div>
                         </div>
                     `;
                 }
