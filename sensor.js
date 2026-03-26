@@ -191,7 +191,6 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 
-                // --- KUNCI GRAFIK MULUS 0.5 DETIK ---
                 animation: {
                     x: {
                         duration: 1000,     // Samakan persis dengan delay ESP32 (500ms)
@@ -201,7 +200,6 @@
                         duration: 0        // Tetap matikan animasi vertikal agar tidak nyungsep
                     }
                 },
-                // ------------------------------------
 
                 interaction: { mode: 'index', intersect: false },
                 scales: {
@@ -587,11 +585,58 @@
                 datasetValues.ph.push(data.ph); datasetValues.temp.push(data.temp); datasetValues.hum.push(data.hum); datasetValues.ec.push(data.ec);
                 multiChart.update();
 
-                // --- REKOMENDASI AI ---
-                let commodityText = "";
-                if (data.score > 80) commodityText = "Kondisi <strong>lahan sangat subur.</strong> <br> Berdasarkan hasil Sangat direkomendasikan untuk Padi, Melon, Cabai, Bawang, atau Mangga.";
-                else if (data.score > 50) commodityText = "Kondisi <strong>lahan cukup.</strong> <br> Dengan berdasarkan hasil scoring tersebut <strong>cocok ditanami Jagung, Kedelai, Sorgum, Kopi, atau Alpukat.</strong>";
-                else commodityText = "Lahan dalam <strong>kondisi kritis.</strong> <br> Dengan berdasarkan hasil scoring tersebut, <strong>disarankan komoditas tangguh seperti Singkong, Ubi Jalar, Jati, atau Sengon.</strong>";
+                // --- DATABASE KEBUTUHAN KOMODITAS (Berdasarkan Jurnal/Balittanah) ---
+                // Anda bisa mengubah angka-angka ini nanti setelah mendapat data pasti dari jurnal
+                const cropDatabase = [
+                    { name: "Padi Sawah", phMin: 5.5, phMax: 6.5, n: 45, p: 20, k: 30 },
+                    { name: "Bawang Merah", phMin: 5.6, phMax: 7.0, n: 80, p: 40, k: 40 },
+                    { name: "Cabai Merah", phMin: 6.0, phMax: 7.0, n: 100, p: 50, k: 50 },
+                    { name: "Jagung Manis", phMin: 5.8, phMax: 7.0, n: 60, p: 30, k: 40 },
+                    { name: "Singkong (Tangguh)", phMin: 4.5, phMax: 8.0, n: 30, p: 10, k: 20 }
+                ];
+
+                // --- REKOMENDASI AI CERDAS BERBASIS PARAMETER SPESIFIK ---
+                let generalStatus = "";
+                
+                // 1. Kesimpulan Skor Umum (Tetap dipertahankan untuk status lahan)
+                if (data.score > 80) generalStatus = "Kondisi <strong>lahan secara umum sangat subur.</strong>";
+                else if (data.score > 50) generalStatus = "Kondisi <strong>lahan secara umum cukup baik.</strong>";
+                else generalStatus = "Kondisi <strong>lahan secara umum kritis/kurang nutrisi.</strong>";
+
+                let highlyRecommended = [];
+                let conditionalRecommended = [];
+
+                // 2. Mesin AI Mengevaluasi Kecocokan Setiap Tanaman
+                cropDatabase.forEach(crop => {
+                    // Cek apakah data sensor saat ini memenuhi syarat tanaman
+                    let isPhOk = (data.ph >= crop.phMin && data.ph <= crop.phMax);
+                    let isNOk = (data.nitrogen >= crop.n);
+                    let isPOk = (data.fosfor >= crop.p);
+                    let isKOk = (data.kalium >= crop.k);
+
+                    if (isPhOk && isNOk && isPOk && isKOk) {
+                        // Jika pH dan SEMUA NPK memenuhi syarat -> Sangat Direkomendasikan
+                        highlyRecommended.push(crop.name);
+                    } else if (isPhOk && (data.nitrogen >= crop.n * 0.6)) {
+                        // Jika pH cocok, tapi NPK agak kurang sedikit -> Bisa ditanam tapi butuh pupuk
+                        conditionalRecommended.push(crop.name);
+                    }
+                });
+
+                // 3. Merakit Teks Output untuk Dashboard
+                let commodityText = `${generalStatus}<br><br>`;
+
+                if (highlyRecommended.length > 0) {
+                    commodityText += `🌱 <strong>Sangat Cocok:</strong> ${highlyRecommended.join(", ")}.<br>`;
+                }
+
+                if (conditionalRecommended.length > 0) {
+                    commodityText += `⚠️ <strong>Bisa Ditanam (Perlu Pupuk):</strong> ${conditionalRecommended.join(", ")}.<br>`;
+                }
+
+                if (highlyRecommended.length === 0 && conditionalRecommended.length === 0) {
+                    commodityText += `🚨 <strong>Belum ada yang cocok:</strong> Perbaiki pH atau unsur hara lahan Anda terlebih dahulu berdasarkan rekomendasi sistem.`;
+                }
 
                 let fertilizers = []; 
                 let warnings = [];
