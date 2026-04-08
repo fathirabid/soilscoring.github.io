@@ -180,7 +180,7 @@
                 datasets: [
                     { label: 'Nitrogen (N)', data: datasetValues.n, borderColor: '#2ecc71', backgroundColor: '#2ecc71', tension: 0.3, borderWidth: 2, pointRadius: 0 },
                     { label: 'Fosfor (P)', data: datasetValues.p, borderColor: '#e67e22', backgroundColor: '#e67e22', tension: 0.3, borderWidth: 2, pointRadius: 0 },
-                    { label: 'Kalium (K)', data: datasetValues.k, borderColor: '#3498db', tension: 0.3, borderWidth: 2, pointRadius: 0 },
+                    { label: 'Kalium (K)', data: datasetValues.k, borderColor: '#3498db', backgroundColor: '#3498db', tension: 0.3, borderWidth: 2, pointRadius: 0 },
                     { label: 'pH Tanah', data: datasetValues.ph, borderColor: '#f1c40f', backgroundColor: '#f1c40f', tension: 0.3, borderWidth: 2, pointRadius: 0 },
                     { label: 'Suhu (°C)', data: datasetValues.temp, borderColor: '#e74c3c', backgroundColor: '#e74c3c', tension: 0.3, borderWidth: 2, pointRadius: 0 },
                     { label: 'Kelembapan (%)', data: datasetValues.hum, borderColor: '#9b59b6', backgroundColor: '#9b59b6', tension: 0.3, borderWidth: 2, pointRadius: 0 },
@@ -954,3 +954,19 @@ function resetDataToZero() {
     const recomText = document.getElementById('ai-recom-text');
     if(recomText) recomText.innerHTML = '<div class="recom-content" style="border-left-color:#888;"><span class="recom-title">Status: Offline</span><div class="recom-value" style="color:#888;">Menunggu kalkulasi...</div></div>';
 }
+
+// ==========================================
+// MAGIC SCRIPT: TELEPORTASI PROFIL DI HP
+// ==========================================
+window.addEventListener('load', () => {
+    // Jika layar seukuran HP atau lebih kecil
+    if (window.innerWidth <= 768) {
+        const profile = document.querySelector('.sidebar-footer');
+        const mainContent = document.querySelector('.main-content');
+        
+        // Evakuasi profil dari menu bawah ke bagian paling atas halaman utama
+        if (profile && mainContent) {
+            mainContent.insertBefore(profile, mainContent.firstChild);
+        }
+    }
+});

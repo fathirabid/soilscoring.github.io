@@ -369,3 +369,19 @@ function startLiveTracking() {
         showToast('error', 'Sistem Gagal', 'Browser Anda tidak mendukung fitur Live GPS.');
     }
 }
+
+// ==========================================
+// MAGIC SCRIPT: TELEPORTASI PROFIL DI HP
+// ==========================================
+window.addEventListener('load', () => {
+    // Jika layar seukuran HP atau lebih kecil
+    if (window.innerWidth <= 768) {
+        const profile = document.querySelector('.sidebar-footer');
+        const mainContent = document.querySelector('.main-content');
+        
+        // Evakuasi profil dari menu bawah ke bagian paling atas halaman utama
+        if (profile && mainContent) {
+            mainContent.insertBefore(profile, mainContent.firstChild);
+        }
+    }
+});

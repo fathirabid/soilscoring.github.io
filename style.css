@@ -7,6 +7,10 @@
     --shadow: 0 8px 30px rgba(0,0,0,0.08);
 }
 
+*, *::before, *::after {
+    box-sizing: border-box !important;
+}
+
 body {
     margin: 0;
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -670,6 +674,17 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: 0.3s;
+}
+
+#btn-clear:hover {
+    background-color: #e74c3c !important; /* Latar berubah jadi merah */
+    color: #ffffff !important;            /* Teks berubah jadi putih */
+    border-color: #e74c3c !important;     /* Garis tepi tetap merah */
+}
+
+/* Pastikan ikon tempat sampah di dalamnya ikut menjadi putih */
+#btn-clear:hover svg {
+    color: #ffffff !important; 
 }
 
 .btn-download:hover {
@@ -1643,3 +1658,433 @@ input:checked + .slider:before { transform: translateX(20px); }
     .prototype-showcase { flex-direction: column; padding: 25px; text-align: center; }
     .proto-features li { justify-content: center; }
 }
+
+/* ==========================================================
+   MOBILE RESPONSIVE: TAMPILAN HP (INDEX.HTML / DASHBOARD)
+   ========================================================== */
+
+   /* Memaksa Grafik Chart.js agar mau mengecil mengikuti layar */
+.canvas-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+}
+canvas {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+@media screen and (max-width: 768px) {
+
+    /* 0. Kunci Layar Utama agar tidak "Bocor" ke samping karena elemen tersembunyi */
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+
+    /* 1. Pondasi: Bebaskan scroll untuk layar HP */
+    .app-container {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+    
+    .main-content {
+        width: 100% !important;
+        max-width: 100vw !important; 
+        padding: 20px 15px 100px 15px !important; 
+        overflow-x: hidden !important;  /* Cegah kebocoran elemen sekecil apa pun ke samping */
+    }
+
+    /* 2. Sulap Sidebar Menjadi Bottom Navigation (Navigasi Bawah) */
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 10px 15px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 9999;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.08);
+        border-right: none;
+        border-top: 1px solid #eee;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    /* Sembunyikan Logo dan Jam di menu bawah HP */
+    .logo, .datetime-wrapper {
+        display: none;
+    }
+
+    /* Atur wujud tombol menu */
+    .sidebar nav {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-around;
+        margin: 0;
+    }
+
+    .sidebar nav a {
+        flex-direction: column; /* Ikon di atas, teks di bawah */
+        gap: 5px;
+        padding: 8px 2px;
+        margin-bottom: 0;
+        font-size: 10px; 
+        text-align: center;
+        border-radius: 8px;
+        width: 20%;
+    }
+
+    .sidebar nav a svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* ===================================================
+       PERBAIKAN 1: Terbangkan Akun Admin ke Kanan Atas 
+       =================================================== */
+    
+    /* 1. Bebaskan Sidebar dari jebakan efek Blur agar elemen bisa terbang */
+    .sidebar {
+        backdrop-filter: none !important; 
+        background: #ffffff !important;
+    }
+
+    /* Pastikan menu bawah mengambil sisa ruang dengan benar */
+    .sidebar-content {
+        width: 100% !important;
+    }
+
+    /* 2. Posisi presisi di Kanan Atas (Sejajar dengan teks header) */
+    /* Cari blok ini, pastikan ada width: auto !important; */
+    .sidebar-footer {
+        position: absolute !important;
+        top: 10px !important;
+        right: 15px !important;
+        bottom: auto !important;
+        left: auto !important;
+        z-index: 105 !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        width: auto !important; /* INI PENTING! */
+        height: 32px !important; 
+    }
+
+    /* 3. Rapikan Susunan Profil Admin */
+    #admin-view {
+        flex-direction: row !important;
+        align-items: center !important;
+        height: 100% !important;
+        gap: 8px !important;
+    }
+
+    #admin-view:not([style*="display: none"]) {
+        display: flex !important;
+    }
+
+    .sidebar-footer .user-profile {
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        height: 100% !important;
+    }
+
+    .sidebar-footer .user-info {
+        display: flex;
+        flex-direction: column !important;
+        justify-content: center !important;
+    }
+
+    /* Modifikasi teks nama agar pas di header HP */
+    .sidebar-footer .user-info .name {
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: var(--primary) !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Sembunyikan role "Akses Penuh" agar tidak terlalu panjang */
+    .sidebar-footer .user-info .role {
+        display: none !important;
+    }
+
+    .sidebar-footer .avatar img {
+        width: 32px !important; /* Disamakan dengan tombol logout */
+        height: 32px !important;
+        margin: 0 !important;
+        border: 2px solid var(--primary) !important;
+    }
+
+    /* 4. Sulap Tombol Logout Jadi Lingkaran Presisi */
+    .sidebar-footer .btn-logout {
+        width: 32px !important; /* Disamakan dengan tinggi avatar */
+        height: 32px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        background: white !important;
+        color: #e74c3c !important;
+        border: 1px solid #fecaca !important; /* Tambahkan bingkai merah super tipis */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+    }
+
+    .sidebar-footer .btn-logout span {
+        display: none !important; 
+    }
+    
+    .sidebar-footer .btn-logout svg {
+        margin: 0 !important;
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    /* 5. Rapikan Tombol "Masuk Admin" saat belum Login */
+    #guest-view .btn-login-main {
+        padding: 6px 14px !important;
+        font-size: 12px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+        margin: 0 !important;
+    }
+
+    /* ===================================================
+       PERBAIKAN 2: Toast Mobile (Muncul dari Kanan)
+       =================================================== */
+    #toast.toast-container {
+        top: 60px !important;     /* Posisikan di atas agar tidak menabrak menu bawah */
+        bottom: auto !important;
+        right: 15px !important;   /* Tempelkan ke margin kanan */
+        left: auto !important;    /* Matikan paksaan rata tengah */
+        width: auto !important;
+        max-width: 85vw !important; /* Lebar maksimal 85% dari layar HP */
+        
+        /* Sembunyikan Toast jauh di luar batas kanan layar (Sumbu X) */
+        transform: translateX(150%) !important; 
+        z-index: 99999 !important;
+    }
+
+    #toast.toast-container.show {
+        /* Saat dipanggil JS, luncuncurkan kembali ke posisi awal (0) */
+        transform: translateX(0) !important; 
+    }
+
+    /* 3. Header Buatan untuk HP (Pengganti logo yang disembunyikan) */
+    body::before {
+        content: "🌱 AGROSKOR Mobile";
+        display: block;
+        background: white;
+        color: var(--primary);
+        font-weight: 800;
+        font-size: 16px;
+        padding: 15px 20px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    /* 4. Percantik Area Header (Dashboard Analitik) Ala Aplikasi Modern */
+    .top-bar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px !important; /* Jarak antar elemen lebih proporsional */
+        margin-bottom: 30px !important; /* Ruang napas ekstra sebelum kotak skor hijau */
+        padding: 5px 5px 0 5px !important; 
+    }
+
+    .top-bar .header-title {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+    }
+
+    /* Poles Judul Utama agar lebih Tegas dan Premium */
+    .top-bar .header-title h1 {
+        font-size: 24px !important; /* Sedikit dibesarkan */
+        font-weight: 800 !important;
+        color: #1e293b !important; /* Warna hitam kebiruan (Slate 800) yang elegan */
+        line-height: 1.2 !important;
+        margin: 0 !important;
+        letter-spacing: -0.5px !important; /* Jarak antar huruf dirapatkan sedikit */
+    }
+
+    /* Poles Teks Paragraf agar Lembut dan Mudah Dibaca */
+    .top-bar .header-title p {
+        font-size: 13px !important;
+        color: #64748b !important; /* Warna abu-abu lembut agar tidak balapan dengan judul */
+        line-height: 1.6 !important; /* Jarak antar baris dilonggarkan */
+        margin: 0 !important;
+        font-weight: 500 !important;
+    }
+
+    /* Poles Indikator Status (Menunggu Alat / Offline) menjadi "Pill" modern */
+    .top-bar .status-indicator {
+        padding: 6px 14px !important; /* Dibuat lebih ramping */
+        border-radius: 20px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important; /* Bayangan sangat tipis dan halus */
+        border: 1px solid #f1f5f9 !important; /* Garis tepi samar */
+        background: #ffffff !important;
+        display: inline-flex !important; /* Mengunci lebar agar memeluk teks saja */
+        margin-top: 4px !important;
+    }
+
+    /* Kembalikan ukuran tombol Ekspor CSV agar proporsional di sudut kanan */
+    .btn-download {
+        width: auto !important; 
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        justify-content: center !important;
+        white-space: nowrap !important; 
+    }
+
+    /* 5. Tumpuk Banner Kotak Skor Utama (Atas-Bawah) */
+    .hero-score {
+        flex-direction: column; 
+        padding: 25px 20px;
+        gap: 20px;
+        text-align: center;
+        border-radius: 20px;
+    }
+
+    .score-circle {
+        width: 120px; /* Perkecil sedikit lingkaran skor agar pas di HP */
+    }
+
+    /* 6. Rapikan 7 Kotak Sensor (Grid 1 Kolom) */
+    .parameters-grid {
+        grid-template-columns: 1fr; /* Paksa menjadi 1 baris ke bawah */
+        gap: 15px;
+    }
+
+    .param-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    /* 7. Rapikan Judul Grafik, Real-Time (Kiri), dan CSV (Kanan) */
+    .chart-card .card-header {
+        flex-direction: row !important; /* Paksa menyamping */
+        flex-wrap: wrap !important;     /* Izinkan elemen turun baris jika sempit */
+        justify-content: space-between !important; /* Dorong ke ujung kiri dan kanan */
+        align-items: center !important;
+        gap: 15px !important;
+    }
+
+    /* Paksa Judul 'Monitoring Tanah' memakan 1 baris penuh di atas */
+    .chart-card .card-header h3 {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        margin: 0 !important;
+        text-align: left !important;
+    }
+
+    /* Pastikan Tag dan Tombol berbagi tempat di baris bawahnya */
+    .chart-card .card-header .live-tag {
+        margin: 0 !important;
+    }
+
+    .chart-card .card-header .btn-download {
+        width: auto !important; /* Matikan paksaan lebar 100% */
+        margin: 0 !important;
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+
+    .canvas-wrapper {
+        height: 300px; /* Turunkan tinggi grafik sedikit di HP */
+    }
+
+    /* 8. Tumpuk Kotak Analisis Cerdas AI & Rekomendasi Presisi */
+    .analysis-grid {
+        grid-template-columns: 1fr; /* Paksa jadi atas-bawah */
+        gap: 20px;
+    }
+
+    /* 9. Rapikan Fitur Pakar (Rekomendasi Komoditas) */
+    .cae-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .land-area-container {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .land-input-wrapper {
+        width: 100%;
+    }
+
+    /* ==========================================================
+       MOBILE RESPONSIVE: HALAMAN HISTORY (RIWAYAT DATA)
+       ========================================================== */
+       
+    /* 1. Rapikan Tombol Aksi di History (Bersebelahan Kiri-Kanan) */
+    .header-actions {
+        flex-direction: row !important; /* Paksa tombol berbaris menyamping */
+        width: 100% !important;
+        gap: 10px !important;
+        margin-top: 15px !important;
+        box-sizing: border-box !important; 
+    }
+
+    /* Khusus tombol download yang ada di dalam kotak header-actions halaman History */
+    .header-actions .btn-download {
+        flex: 1 !important; /* KUNCI: Membagi lebar layar secara adil (50:50) */
+        width: auto !important; /* Cabut paksaan lebar 100% */
+        box-sizing: border-box !important; 
+        justify-content: center !important;
+        padding: 10px 5px !important; /* Kurangi jarak dalam agar muat */
+        font-size: 11px !important; /* Kecilkan huruf sedikit agar sejajar rapi */
+        white-space: nowrap !important; /* Larang teks turun ke baris bawah */
+    }
+
+    /* 2. Optimalisasi Tabel Data Sensor (Agar bisa di-scroll ke samping dengan aman) */
+    #history-content-box {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 15px 10px !important;
+        overflow: hidden !important; /* Mengunci kotak putih agar tidak bocor ke kanan */
+    }
+
+    .table-responsive {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: auto !important; /* Mengizinkan geser kiri-kanan khusus untuk tabel */
+        -webkit-overflow-scrolling: touch !important; /* Efek geser mulus di HP */
+        display: block !important;
+    }
+
+    /* 3. Paksa Teks Tabel Memanjang (Agar bisa di-swipe dengan rapi) */
+    .history-table th, 
+    .history-table td {
+        white-space: nowrap !important; /* KUNCI: Larang teks turun baris */
+        font-size: 12px !important; /* Sedikit dikecilkan agar elegan di HP */
+        padding: 12px 15px !important; /* Rapikan jarak dalam kotak */
+    }
+
+    /* Kembalikan ukuran kolom agar tidak terlalu rapat */
+    .history-table th:first-child, 
+    .history-table td:first-child {
+        padding-left: 15px !important;
+    }
+
+
+
+} 
+
