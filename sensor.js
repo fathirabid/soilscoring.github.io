@@ -955,18 +955,31 @@ function resetDataToZero() {
     if(recomText) recomText.innerHTML = '<div class="recom-content" style="border-left-color:#888;"><span class="recom-title">Status: Offline</span><div class="recom-value" style="color:#888;">Menunggu kalkulasi...</div></div>';
 }
 
-// ==========================================
-// MAGIC SCRIPT: TELEPORTASI PROFIL DI HP
-// ==========================================
-window.addEventListener('load', () => {
-    // Jika layar seukuran HP atau lebih kecil
+// ==========================================================
+// MAGIC SCRIPT: TELEPORTASI PROFIL PINTAR (RESPONSIVE REAL-TIME)
+// ==========================================================
+function handleProfilePosition() {
+    const profile = document.querySelector('.sidebar-footer');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    
+    if (!profile || !sidebar || !mainContent) return; // Keamanan jika elemen tidak ditemukan
+
     if (window.innerWidth <= 768) {
-        const profile = document.querySelector('.sidebar-footer');
-        const mainContent = document.querySelector('.main-content');
-        
-        // Evakuasi profil dari menu bawah ke bagian paling atas halaman utama
-        if (profile && mainContent) {
+        // JIKA LAYAR HP: Pindahkan profil ke atas Main Content (jika belum ada di sana)
+        if (profile.parentElement !== mainContent) {
             mainContent.insertBefore(profile, mainContent.firstChild);
         }
+    } else {
+        // JIKA LAYAR DEKSTOP: Pulangkan profil kembali ke bawah Sidebar (jika belum ada di sana)
+        if (profile.parentElement !== sidebar) {
+            sidebar.appendChild(profile);
+        }
     }
-});
+}
+
+// 1. Jalankan saat halaman pertama kali dibuka
+window.addEventListener('load', handleProfilePosition);
+
+// 2. Jalankan secara REAL-TIME setiap kali ukuran layar ditarik/diubah (resize)
+window.addEventListener('resize', handleProfilePosition);
