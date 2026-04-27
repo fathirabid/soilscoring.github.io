@@ -101,6 +101,20 @@
                 </div>
             </div>
 
+            <div id="rebootModal" class="modal-overlay">
+                <div class="modal-content logout-box">
+                    <div class="modal-header">
+                        <div class="icon-warning" style="color: #e74c3c;">🔄</div>
+                        <h2>Konfirmasi Reboot</h2>
+                        <p>Apakah Anda yakin ingin me-restart ESP32? Alat akan mati sesaat dan pembacaan sensor akan terputus sementara.</p>
+                    </div>
+                    <div class="modal-footer-btns">
+                        <button type="button" onclick="confirmReboot()" class="btn-confirm-logout">Ya, Reboot Sekarang</button>
+                        <button type="button" onclick="closeRebootModal()" class="btn-cancel">Batal</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="toast" class="toast-container">
                 <div class="toast-content">
                     <div id="toast-icon"></div>
@@ -178,37 +192,37 @@
                                 <strong>Peringatan Lahan Kritis (Dashboard)</strong>
                                 <span>Munculkan pop-up saat skor < 50</span>
                             </div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label>
+                            <label class="switch"><input type="checkbox" id="notif-kritis" onchange="updateNotifSetting('kritis', this.checked)"><span class="slider round"></span></label>
                         </div>
                         <div class="toggle-group">
                             <div class="toggle-text">
                                 <strong>Integrasi Bot WhatsApp</strong>
                                 <span>Kirim laporan harian ke grup petani</span>
                             </div>
-                            <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+                            <label class="switch"><input type="checkbox" id="notif-wa" onchange="updateNotifSetting('wa', this.checked)"><span class="slider round"></span></label>
                         </div>
                         <div class="toggle-group" style="border-bottom: none;">
                             <div class="toggle-text">
                                 <strong>Notifikasi Email Darurat</strong>
                                 <span>Kirim email ke dinas/admin terkait</span>
                             </div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label>
+                            <label class="switch"><input type="checkbox" id="notif-email" onchange="updateNotifSetting('email', this.checked)"><span class="slider round"></span></label>
                         </div>
                     </div>
 
                     <div class="box settings-card" style="grid-column: 1 / -1;">
                         <div class="settings-header">
                             <div class="icon-wrap" style="background: #ffecec; color: #e74c3c;"><i data-feather="cpu"></i></div>
-                            <h3>Manajemen Perangkat (ESP32 Node-01)</h3>
+                            <h3>Manajemen Perangkat Jarak Jauh</h3>
                         </div>
-                        <p class="settings-desc">Kontrol jarak jauh untuk purwarupa SoilSense yang terpasang di lahan.</p>
+                        <p class="settings-desc">Kontrol jarak jauh untuk purwarupa AGROSKOR yang terpasang di lahan.</p>
                         <div class="device-controls">
                             <div class="control-item">
                                 <div class="control-info">
-                                    <strong>Restart Purwarupa</strong>
+                                    <strong>Restart Prototipe</strong>
                                     <span>Lakukan reboot jarak jauh jika alat macet.</span>
                                 </div>
-                                <button onclick="rebootDevice()" class="btn-danger-outline"><i data-feather="refresh-cw"></i> Reboot ESP32</button>
+                                <button type="button" onclick="showRebootModal()" class="btn-danger-outline"><i data-feather="refresh-cw"></i> Reboot ESP32</button>
                             </div>
                         </div>
                     </div>
@@ -219,7 +233,7 @@
             <footer class="dashboard-footer">
                 <div class="footer-content">
                     <div class="footer-left">
-                        <p>&copy; 2026 <strong>SoilSense Team</strong>. All rights reserved.</p>
+                        <p>&copy; 2026 <strong>AGROSKOR Team</strong>. All rights reserved.</p>
                         <span class="version">V 1.0.2 - Prototype Stage</span>
                     </div>
                     <div class="footer-right">

@@ -24,16 +24,32 @@ function closeLogin() { document.getElementById('loginModal').style.display = 'n
 function handleLogout() { document.getElementById('logoutModal').style.display = 'flex'; }
 function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
 
+// Variabel penampung waktu ditaruh di LUAR fungsi agar tidak tumpang tindih
+let toastTimer;
+
 // B. Fungsi Notifikasi Toast (Pojok Layar)
 function showToast(status, title, msg) {
     const toast = document.getElementById('toast');
     if (!toast) return;
+
+    // 1. Bersihkan timer lama sebelum memunculkan toast baru
+    clearTimeout(toastTimer);
+
+    // 2. Set teks judul dan pesan
     document.getElementById('toast-title').innerText = title;
     document.getElementById('toast-msg').innerText = msg;
+    
+    // 3. Reset dan Set Warna (MENGGUNAKAN KELAS ASLI ANDA)
     toast.className = "toast-container";
     toast.classList.add(status === 'success' ? 'toast-success' : 'toast-error');
+    
+    // 4. Munculkan toast ke layar
     toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+
+    // 5. Set timer hitung mundur (3.5 detik)
+    toastTimer = setTimeout(() => { 
+        toast.classList.remove('show'); 
+    }, 3500);
 }
 
 // C. Fungsi Notifikasi Modal Status (Pop-up Tengah)
@@ -205,20 +221,27 @@ database.ref('SoilSense/Settings/Thresholds').on('value', (snapshot) => {
 });
 
 // --- FUNGSI REBOOT JARAK JAUH ---
-function rebootDevice() {
-    if(confirm("⚠️ PERINGATAN: Apakah Anda yakin ingin me-restart ESP32? Alat akan mati sesaat dan koneksi akan terputus sementara.")) {
-        database.ref('SoilSense/Command/reboot').set(true)
-        .then(() => {
-            showToast('success', 'Sinyal Dikirim', 'Mengeksekusi Reboot pada ESP32...');
-            
-            setTimeout(() => {
-                showToast('error', 'Koneksi Terputus', 'Alat sedang restart. Menunggu koneksi ulang...');
-            }, 2000);
-        })
-        .catch((error) => {
-            showToast('error', 'Gagal', 'Sinyal gagal dikirim: ' + error.message);
-        });
-    }
+function showRebootModal() { document.getElementById('rebootModal').style.display = 'flex'; }
+function closeRebootModal() { document.getElementById('rebootModal').style.display = 'none'; }
+
+// --- FUNGSI EKSEKUSI REBOOT FIREBASE ---
+function confirmReboot() {
+    // 1. Tutup modal terlebih dahulu
+    closeRebootModal();
+
+    // 2. Kirim perintah ke Firebase
+    database.ref('SoilSense/Command/reboot').set(true)
+    .then(() => {
+        showToast('success', 'Sinyal Dikirim', 'Mengeksekusi Reboot pada ESP32...');
+        
+        // Memunculkan efek terputus secara visual setelah 2 detik
+        setTimeout(() => {
+            showToast('error', 'Koneksi Terputus', 'Alat sedang restart. Menunggu koneksi ulang...');
+        }, 2000);
+    })
+    .catch((error) => {
+        showToast('error', 'Gagal', 'Sinyal gagal dikirim: ' + error.message);
+    });
 }
 
 // ==========================================================
@@ -243,6 +266,58 @@ function handleProfilePosition() {
         }
     }
 }
+
+// ==========================================
+// PENGATURAN PREFERENSI NOTIFIKASI
+// ==========================================
+
+// 1. Fungsi untuk membaca status dari Firebase secara realtime
+function initNotifSync() {
+    // Kita buat path baru di Firebase: SoilSense/Settings/Notifications
+    database.ref('SoilSense/Settings/Notifications').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            // Update posisi toggle sesuai data di database
+            if(document.getElementById('notif-kritis')) document.getElementById('notif-kritis').checked = data.kritis || false;
+            if(document.getElementById('notif-wa')) document.getElementById('notif-wa').checked = data.wa || false;
+            if(document.getElementById('notif-email')) document.getElementById('notif-email').checked = data.email || false;
+        }
+    });
+}
+
+// 2. Fungsi untuk menyimpan perubahan ke Firebase saat toggle digeser
+function updateNotifSetting(key, isChecked) {
+    database.ref('SoilSense/Settings/Notifications/' + key).set(isChecked)
+    .then(() => {
+        
+        // 1. Tentukan nama fitur berdasarkan tombol (key) yang diklik
+        let namaFitur = "";
+        if (key === 'kritis') {
+            namaFitur = "Peringatan Lahan Kritis";
+        } else if (key === 'wa') {
+            namaFitur = "Integrasi Bot WhatsApp";
+        } else if (key === 'email') {
+            namaFitur = "Notifikasi Email Darurat";
+        }
+
+        // 2. Munculkan Toast dengan nama fitur yang spesifik
+        if (isChecked === true) {
+            showToast('success', 'Diaktifkan', namaFitur + ' telah dihidupkan.');
+        } else {
+            showToast('error', 'Dinonaktifkan', namaFitur + ' berhasil dimatikan.'); 
+        }
+        
+    })
+    .catch((error) => {
+        showToast('error', 'Gagal', 'Terjadi kesalahan: ' + error.message);
+        
+        // Kembalikan posisi toggle jika gagal
+        setTimeout(() => { document.getElementById('notif-' + key).checked = !isChecked; }, 500);
+    });
+}
+
+// Panggil fungsi sinkronisasi agar saat halaman dimuat, toggle langsung menyesuaikan
+initNotifSync();
 
 // 1. Jalankan saat halaman pertama kali dibuka
 window.addEventListener('load', handleProfilePosition);

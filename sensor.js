@@ -978,6 +978,46 @@ function handleProfilePosition() {
     }
 }
 
+// ==========================================
+// MESIN ALARM NOTIFIKASI LAHAN KRITIS (REVISI)
+// ==========================================
+
+let isNotifKritisAktif = false;
+let currentScore = 100; // Anggap aman (100) saat web baru memuat
+let hasAlertedKritis = false;
+
+// 1. PUSAT EVALUASI ALARM (Dipanggil setiap ada pergerakan data)
+function evaluasiAlarm() {
+    // Jika skor kritis DAN saklar menyala
+    if (currentScore < 50 && isNotifKritisAktif === true) {
+        
+        // Cek agar tidak spam
+        if (hasAlertedKritis === false) {
+            showToast('error', '⚠️ PERINGATAN LAHAN KRITIS', 'Skor kesuburan anjlok ke ' + currentScore + '! Segera cek rekomendasi AI.');
+            hasAlertedKritis = true; // Kunci alarm
+        }
+        
+    } 
+    // Jika lahan kembali subur (>= 50), buka kembali kunci alarmnya
+    else if (currentScore >= 50) {
+        hasAlertedKritis = false; 
+    }
+}
+
+// 2. Pantau "Saklar" Notifikasi
+database.ref('SoilSense/Settings/Notifications/kritis').on('value', (snapshot) => {
+    isNotifKritisAktif = snapshot.val() || false;
+    evaluasiAlarm(); // Cek alarm setiap kali halaman dimuat atau saklar digeser
+});
+
+// 3. Pantau "Skor" dari ESP32
+database.ref('SoilSense/SensorData/score').on('value', (snapshot) => {
+    if (snapshot.exists()) {
+        currentScore = snapshot.val();
+        evaluasiAlarm(); // Cek alarm setiap kali ada data skor baru dari alat
+    }
+});
+
 // 1. Jalankan saat halaman pertama kali dibuka
 window.addEventListener('load', handleProfilePosition);
 
