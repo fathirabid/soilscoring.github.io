@@ -317,6 +317,75 @@ function handleProfilePosition() {
     }
 }
 
+// ==========================================
+// FITUR EXPORT / UNDUH LAPORAN CSV
+// ==========================================
+
+// --- BUKA/TUTUP MODAL CSV ---
+function showCsvModal() { 
+    // Cek langsung ke array data aslinya, bukan ke tampilan tabel HTML-nya
+    if (historyDataArray.length === 0) {
+        showToast('error', 'Data Kosong', 'Tidak ada data riwayat yang bisa diunduh saat ini.');
+        return; // Hentikan fungsi jika datanya 0
+    }
+
+    // Jika datanya ada, baru izinkan modal terbuka
+    document.getElementById('csvModal').style.display = 'flex'; 
+}
+
+function closeCsvModal() { 
+    document.getElementById('csvModal').style.display = 'none'; 
+}
+
+// --- FUNGSI EKSEKUSI UNDUH CSV ---
+function confirmDownloadCSV() {
+    // 1. Tutup modal terlebih dahulu
+    closeCsvModal();
+
+    // 2. Munculkan notifikasi Toast
+    showToast('success', 'Mengunduh...', 'Laporan CSV sedang disiapkan dan akan segera diunduh.');
+
+    // 3. Proses membaca tabel dan membuat file CSV
+    let csv = [];
+    // Mengambil tabel berdasarkan class "history-table"
+    let rows = document.querySelectorAll("table.history-table tr");
+    
+    for (let i = 0; i < rows.length; i++) {
+        let row = [], cols = rows[i].querySelectorAll("td, th");
+        
+        for (let j = 0; j < cols.length; j++) {
+            // Tambahkan tanda kutip agar format teks/angka yang memiliki koma tidak error di Excel
+            row.push('"' + cols[j].innerText + '"'); 
+        }
+        csv.push(row.join(",")); // Gabungkan kolom dengan koma
+    }
+
+    // 4. Eksekusi Download File ke Browser Pengguna
+    downloadCSVFile(csv.join("\n"), 'Laporan_Sensor_Agroskor.csv');
+}
+
+// --- FUNGSI PEMBANTU DOWNLOAD BROWSER ---
+function downloadCSVFile(csv, filename) {
+    let csvFile;
+    let downloadLink;
+
+    // Buat file CSV dalam bentuk Blob
+    csvFile = new Blob([csv], {type: "text/csv"});
+
+    // Buat link tersembunyi
+    downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    
+    // Klik otomatis secara rahasia
+    downloadLink.click(); 
+    
+    // Hapus link setelah selesai
+    document.body.removeChild(downloadLink); 
+}
+
 // 1. Jalankan saat halaman pertama kali dibuka
 window.addEventListener('load', handleProfilePosition);
 

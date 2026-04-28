@@ -341,6 +341,25 @@ body {
     box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
 }
 
+/* Tombol Konfirmasi Aksi Positif (Hijau) */
+.btn-confirm-success {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary); /* Menggunakan hijau bawaan tema Anda */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-confirm-success:hover {
+    background: var(--secondary); /* Berubah lebih gelap saat di-hover */
+    transform: translateY(-2px); /* Efek tombol terangkat */
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3); /* Cahaya hijau (glow) */
+}
+
 /* Style Modal Status */
 .status-box {
     max-width: 320px !important;
@@ -437,15 +456,26 @@ body {
     display: block;
     text-transform: capitalize;
 }
+
 /* MAIN CONTENT */
 .main-content {
     flex: 1;
     padding: 30px 40px;
     overflow-y: auto;
     
-    /* --- TAMBAHKAN 2 BARIS INI --- */
-    max-width: 1200px !important; /* Batasi agar layar desktop tidak terlalu melar */
-    margin: 0 auto !important;    /* Posisikan seluruh konten di tengah layar monitor */
+    /* Hapus max-width dari sini agar background abu-abu tetap penuh menyentuh sidebar */
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+/* MELINDUNGI KONTEN: Batasi lebar konten agar rapi, tapi biarkan background penuh */
+.main-content > *:not(.modal-overlay) {
+    flex: none; /* KUNCI: Mencegah form/grid di halaman setting melar aneh */
+    max-width: 1200px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .top-bar {
@@ -880,7 +910,7 @@ body {
 
 /* FOOTER */
 .dashboard-footer {
-    margin-top: 50px;
+    margin-top: auto !important; /* Dorong footer ke bawah */
     padding: 30px 0;
     border-top: 1px solid rgba(0,0,0,0.05);
 }
@@ -2103,5 +2133,66 @@ canvas {
     .history-table td:first-child {
         padding-left: 15px !important;
     }
+
+    /* ==========================================================
+   MOBILE RESPONSIVE: HALAMAN ABOUT US (KHUSUS HP)
+   ========================================================== */
+@media (max-width: 768px) {
+    /* 1. Memaksa susunan showcase menjadi atas-bawah */
+    .prototype-showcase {
+        flex-direction: column !important;
+        padding: 20px !important;
+    }
+
+    .proto-text {
+        padding-right: 0 !important;
+        margin-bottom: 30px;
+        text-align: left !important; /* Menghindari teks bolong-bolong akibat justify */
+    }
+
+    .proto-text h2 {
+        font-size: 24px !important;
+        margin-bottom: 15px;
+    }
+
+    .proto-text p {
+        font-size: 14px;
+        line-height: 1.6;
+        text-align: left !important;
+    }
+
+    /* 2. Merapikan daftar fitur agar sejajar kiri */
+    .proto-features {
+        margin-top: 20px;
+    }
+
+    .proto-features li {
+        justify-content: flex-start !important; /* Ikon centang dan teks berbaris lurus ke kiri */
+        font-size: 14px;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    /* 3. Galeri Foto Prototype menjadi satu kolom */
+    .proto-gallery {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+
+    .proto-gallery-img {
+        height: 200px !important; /* Tinggi seragam agar tidak terlalu panjang */
+    }
+
+    /* 4. Grid Tim Pengembang menjadi satu kolom */
+    .team-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px;
+        padding: 10px;
+    }
+
+    .team-card {
+        padding: 20px;
+    }
+}
 } 
 
