@@ -979,42 +979,50 @@ function handleProfilePosition() {
 }
 
 // ==========================================
-// MESIN ALARM NOTIFIKASI LAHAN KRITIS (REVISI)
+// MESIN ALARM NOTIFIKASI LAHAN KRITIS (ANTI-NOISE)
 // ==========================================
 
 let isNotifKritisAktif = false;
-let currentScore = 100; // Anggap aman (100) saat web baru memuat
+let currentScore = null; // Ubah jadi null (kosong) agar tidak memicu alarm 0
 let hasAlertedKritis = false;
+let isDataLoaded = false; // Bendera pengaman
 
-// 1. PUSAT EVALUASI ALARM (Dipanggil setiap ada pergerakan data)
+// 1. PUSAT EVALUASI ALARM
 function evaluasiAlarm() {
-    // Jika skor kritis DAN saklar menyala
+    // PENGAMAN 1: Jangan bunyi kalau belum login (Tunggu admin masuk)
+    if (typeof isLoggedIn !== 'undefined' && isLoggedIn === false) return; 
+
+    // PENGAMAN 2: Jangan bunyi kalau data asli belum datang dari ESP32
+    if (isDataLoaded === false || currentScore === null) return;
+
+    // Jika skor kritis (asli dari alat) DAN saklar di Settings menyala
     if (currentScore < 50 && isNotifKritisAktif === true) {
         
-        // Cek agar tidak spam
+        // Cek agar tidak spam (muncul berkali-kali)
         if (hasAlertedKritis === false) {
             showToast('error', '⚠️ PERINGATAN LAHAN KRITIS', 'Skor kesuburan anjlok ke ' + currentScore + '! Segera cek rekomendasi AI.');
-            hasAlertedKritis = true; // Kunci alarm
+            hasAlertedKritis = true; 
         }
         
     } 
-    // Jika lahan kembali subur (>= 50), buka kembali kunci alarmnya
+    // Jika lahan kembali normal
     else if (currentScore >= 50) {
         hasAlertedKritis = false; 
     }
 }
 
-// 2. Pantau "Saklar" Notifikasi
+// 2. Pantau "Saklar" Notifikasi dari halaman Settings
 database.ref('SoilSense/Settings/Notifications/kritis').on('value', (snapshot) => {
     isNotifKritisAktif = snapshot.val() || false;
-    evaluasiAlarm(); // Cek alarm setiap kali halaman dimuat atau saklar digeser
+    evaluasiAlarm(); 
 });
 
 // 3. Pantau "Skor" dari ESP32
 database.ref('SoilSense/SensorData/score').on('value', (snapshot) => {
     if (snapshot.exists()) {
         currentScore = snapshot.val();
-        evaluasiAlarm(); // Cek alarm setiap kali ada data skor baru dari alat
+        isDataLoaded = true; // Tandai bahwa ini adalah data ASLI dari alat
+        evaluasiAlarm(); 
     }
 });
 
