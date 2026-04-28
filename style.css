@@ -907,7 +907,6 @@ body {
     100% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
 }
 
-
 /* FOOTER */
 .dashboard-footer {
     margin-top: auto !important; /* Dorong footer ke bawah */
@@ -1710,7 +1709,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 /* ==========================================================
-   MOBILE RESPONSIVE: TAMPILAN HP (INDEX.HTML / DASHBOARD)
+   MOBILE RESPONSIVE: TAMPILAN HP 
    ========================================================== */
 
    /* Memaksa Grafik Chart.js agar mau mengecil mengikuti layar */
@@ -2133,94 +2132,32 @@ canvas {
     .history-table td:first-child {
         padding-left: 15px !important;
     }
-
-    /* ==========================================================
-   MOBILE RESPONSIVE: HALAMAN ABOUT US (KHUSUS HP)
-   ========================================================== */
-@media (max-width: 768px) {
-    /* 1. Memaksa susunan showcase menjadi atas-bawah */
-    .prototype-showcase {
-        flex-direction: column !important;
-        padding: 20px !important;
-    }
-
-    .proto-text {
-        padding-right: 0 !important;
-        margin-bottom: 30px;
-        text-align: left !important; /* Menghindari teks bolong-bolong akibat justify */
-    }
-
-    .proto-text h2 {
-        font-size: 24px !important;
-        margin-bottom: 15px;
-    }
-
-    .proto-text p {
-        font-size: 14px;
-        line-height: 1.6;
-        text-align: left !important;
-    }
-
-    /* 2. Merapikan daftar fitur agar sejajar kiri */
-    .proto-features {
-        margin-top: 20px;
-    }
-
-    .proto-features li {
-        justify-content: flex-start !important; /* Ikon centang dan teks berbaris lurus ke kiri */
-        font-size: 14px;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-
-    /* 3. Galeri Foto Prototype menjadi satu kolom */
-    .proto-gallery {
-        grid-template-columns: 1fr !important;
-        gap: 15px;
-    }
-
-    .proto-gallery-img {
-        height: 200px !important; /* Tinggi seragam agar tidak terlalu panjang */
-    }
-
-    /* 4. Grid Tim Pengembang menjadi satu kolom */
-    .team-grid {
-        grid-template-columns: 1fr !important;
-        gap: 20px;
-        padding: 10px;
-    }
-
-    .team-card {
-        padding: 20px;
-    }
-}
+} 
 
 /* ==========================================================
-   PERBAIKAN SPASI HALAMAN ABOUT US (KHUSUS HP)
+   PERBAIKAN SPASI & TATA LETAK HALAMAN ABOUT US (KHUSUS HP)
    ========================================================== */
 @media (max-width: 768px) {
-    /* 1. Kurangi jarak antara Judul "Tentang Kami" dengan Kotak Putih */
-    .about-header {
-        margin-bottom: 15px !important;
+    /* 2. Samakan padding dalam kanvas dengan standar Agroskor Card */
+    .prototype-showcase { 
+        flex-direction: column !important; 
+        gap: 20px !important; /* Jarak ideal antara teks list dengan foto */
+        padding: 20px !important; /* Bantalan dalam kanvas disamakan (jangan 15px) */
+        text-align: left !important; 
+    }
+    
+    .proto-text { 
+        padding-right: 0 !important; 
+        margin-bottom: 0 !important; 
     }
 
-    /* 2. Matikan jarak gap bawaan desktop yang menjadi spasi vertikal di HP */
-    .prototype-showcase {
-        gap: 15px !important; /* Awalnya 40px, kita pangkas jadi 15px */
-        padding: 25px 20px !important; /* Sedikit kurangi padding dalam kotak */
+    /* 3. Teks dan Ikon tetap rapi rata kiri */
+    .proto-text p {
+        text-align: left !important; 
     }
 
-    /* 3. Hilangkan margin bawah berlebih pada pembungkus teks */
-    .proto-text {
-        margin-bottom: 5px !important; 
-    }
-
-    /* 4. Hapus padding pada pembungkus gambar yang membuat jarak ganda */
-    .proto-image-wrapper {
-        padding: 0 !important; 
-        margin-top: 5px !important;
+    .proto-features li { 
+        justify-content: flex-start !important; 
     }
 }
-
-} 
 
