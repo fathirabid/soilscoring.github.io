@@ -2194,5 +2194,33 @@ canvas {
         padding: 20px;
     }
 }
+
+/* ==========================================================
+   PERBAIKAN SPASI HALAMAN ABOUT US (KHUSUS HP)
+   ========================================================== */
+@media (max-width: 768px) {
+    /* 1. Kurangi jarak antara Judul "Tentang Kami" dengan Kotak Putih */
+    .about-header {
+        margin-bottom: 15px !important;
+    }
+
+    /* 2. Matikan jarak gap bawaan desktop yang menjadi spasi vertikal di HP */
+    .prototype-showcase {
+        gap: 15px !important; /* Awalnya 40px, kita pangkas jadi 15px */
+        padding: 25px 20px !important; /* Sedikit kurangi padding dalam kotak */
+    }
+
+    /* 3. Hilangkan margin bawah berlebih pada pembungkus teks */
+    .proto-text {
+        margin-bottom: 5px !important; 
+    }
+
+    /* 4. Hapus padding pada pembungkus gambar yang membuat jarak ganda */
+    .proto-image-wrapper {
+        padding: 0 !important; 
+        margin-top: 5px !important;
+    }
+}
+
 } 
 
