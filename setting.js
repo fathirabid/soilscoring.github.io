@@ -191,14 +191,15 @@ const database = firebase.database();
 function saveThresholds(e) {
     e.preventDefault(); 
     
-    const nMin = parseInt(document.getElementById('thresh-n').value) || 0;
-    const pMin = parseInt(document.getElementById('thresh-p').value) || 0;
-    const kMin = parseInt(document.getElementById('thresh-k').value) || 0;
-    const phMin = parseFloat(document.getElementById('thresh-ph').value) || 0;
+    // Gunakan tanda tanya (?.) agar JS tidak CRASH jika kotak HTML belum dibuat/salah ID
+    const nMin = parseInt(document.getElementById('thresh-n')?.value) || 0;
+    const pMin = parseInt(document.getElementById('thresh-p')?.value) || 0;
+    const kMin = parseInt(document.getElementById('thresh-k')?.value) || 0;
+    const phMin = parseFloat(document.getElementById('thresh-ph')?.value) || 0;
 
-    const phMax = parseFloat(document.getElementById('thresh-ph-max').value) || 7.0;
-    const humMin = parseFloat(document.getElementById('thresh-hum-min').value) || 40;
-    const humMax = parseFloat(document.getElementById('thresh-hum-max').value) || 70;
+    const phMax = parseFloat(document.getElementById('thresh-ph-max')?.value) || 7.0;
+    const humMin = parseFloat(document.getElementById('thresh-hum-min')?.value) || 40;
+    const humMax = parseFloat(document.getElementById('thresh-hum-max')?.value) || 70;
 
     // Kirim ke Firebase
     database.ref('SoilSense/Settings/Thresholds').set({
