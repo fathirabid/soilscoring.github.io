@@ -1,6 +1,4 @@
-// ==========================================================
-// 1. INISIALISASI IKON & WAKTU (SIDEBAR)
-// ==========================================================
+
 if (typeof feather !== 'undefined') feather.replace();
 
 function updateTime() {
@@ -8,13 +6,18 @@ function updateTime() {
     const clockEl = document.getElementById('clock');
     const dateEl = document.getElementById('date');
     if (clockEl) clockEl.innerText = now.toLocaleTimeString('id-ID', { hour12: false });
-    if (dateEl) dateEl.innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    if (dateEl) dateEl.innerText = now.toLocaleDateString('id-ID', { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+    });
 }
 setInterval(updateTime, 1000); updateTime();
 
 
 // ==========================================================
-// 2. BLOK UNIVERSAL: AUTENTIKASI, MODAL, & TOAST
+// BLOK UNIVERSAL: AUTENTIKASI, MODAL, & TOAST
 // ==========================================================
 let isLoggedIn = false;
 
@@ -27,32 +30,32 @@ function closeLogoutModal() { document.getElementById('logoutModal').style.displ
 // Variabel penampung waktu ditaruh di LUAR fungsi agar tidak tumpang tindih
 let toastTimer;
 
-// B. Fungsi Notifikasi Toast (Pojok Layar)
+// Fungsi Notifikasi Toast (Pojok Layar)
 function showToast(status, title, msg) {
     const toast = document.getElementById('toast');
     if (!toast) return;
 
-    // 1. Bersihkan timer lama sebelum memunculkan toast baru
+    // Bersihkan timer lama sebelum memunculkan toast baru
     clearTimeout(toastTimer);
 
-    // 2. Set teks judul dan pesan
+    // Set teks judul dan pesan
     document.getElementById('toast-title').innerText = title;
     document.getElementById('toast-msg').innerText = msg;
     
-    // 3. Reset dan Set Warna (MENGGUNAKAN KELAS ASLI ANDA)
+    // Reset dan Set Warna (MENGGUNAKAN KELAS ASLI ANDA)
     toast.className = "toast-container";
     toast.classList.add(status === 'success' ? 'toast-success' : 'toast-error');
     
-    // 4. Munculkan toast ke layar
+    // Munculkan toast ke layar
     toast.classList.add('show');
 
-    // 5. Set timer hitung mundur (3.5 detik)
+    // Set timer hitung mundur (3.5 detik)
     toastTimer = setTimeout(() => { 
         toast.classList.remove('show'); 
     }, 3500);
 }
 
-// C. Fungsi Notifikasi Modal Status (Pop-up Tengah)
+// Fungsi Notifikasi Modal Status (Pop-up Tengah)
 function showStatusModal(type, title, message) {
     const modal = document.getElementById('statusModal');
     if (!modal) return;
@@ -75,7 +78,7 @@ function showStatusModal(type, title, message) {
     setTimeout(() => { modal.style.display = 'none'; }, 2000);
 }
 
-// D. Event Listener Utama
+// Event Listener Utama
 document.addEventListener("DOMContentLoaded", () => {
     
     // Toggle Ikon Mata Password
@@ -121,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else { applyAdminState(false); }
 });
 
-// E. Eksekusi Logout
+// Eksekusi Logout
 function confirmLogout() {
     localStorage.setItem("adminLoggedIn", "false");
 
@@ -132,7 +135,7 @@ function confirmLogout() {
     }, 1500);
 }
 
-// F. Terapkan Perubahan UI Sidebar & Panel Settings
+// Terapkan Perubahan UI Sidebar & Panel Settings
 function applyAdminState(loginStatus) {
     isLoggedIn = loginStatus;
     const guestView = document.getElementById('guest-view');
@@ -191,7 +194,6 @@ const database = firebase.database();
 function saveThresholds(e) {
     e.preventDefault(); 
     
-    // Gunakan tanda tanya (?.) agar JS tidak CRASH jika kotak HTML belum dibuat/salah ID
     const nMin = parseInt(document.getElementById('thresh-n')?.value) || 0;
     const pMin = parseInt(document.getElementById('thresh-p')?.value) || 0;
     const kMin = parseInt(document.getElementById('thresh-k')?.value) || 0;
