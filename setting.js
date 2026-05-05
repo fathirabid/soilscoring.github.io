@@ -196,12 +196,19 @@ function saveThresholds(e) {
     const kMin = parseInt(document.getElementById('thresh-k').value); 
     const phMin = parseFloat(document.getElementById('thresh-ph').value);
 
+    const phMax= parseFloat(document.getElementById('thresh-ph-max').value);
+    const humMin = parseFloat(document.getElementById('thresh-hum-min').value);
+    const humMax = parseFloat(document.getElementById('thresh-hum-max').value);
+
     // Kirim ke Firebase
     database.ref('SoilSense/Settings/Thresholds').set({
         n_min: nMin,
         p_min: pMin,
         k_min: kMin, 
-        ph_min: phMin
+        ph_min: phMin,
+        ph_max: phMax,
+        hum_min: humMin,
+        hum_max: humMax
     }).then(() => {
         showToast('success', 'Kalibrasi Disimpan', 'Ambang batas berhasil diperbarui.');
     }).catch((error) => {
@@ -217,6 +224,10 @@ database.ref('SoilSense/Settings/Thresholds').on('value', (snapshot) => {
         if(document.getElementById('thresh-p')) document.getElementById('thresh-p').value = data.p_min;
         if(document.getElementById('thresh-k')) document.getElementById('thresh-k').value = data.k_min; 
         if(document.getElementById('thresh-ph')) document.getElementById('thresh-ph').value = data.ph_min;
+
+        if(document.getElementById('thresh-ph-max')) document.getElementById('thresh-ph-max').value = data.ph_max;
+        if(document.getElementById('thresh-hum-min')) document.getElementById('thresh-hum-min').value = data.hum_min;
+        if(document.getElementById('thresh-hum-max')) document.getElementById('thresh-hum-max').value = data.hum_max;
     }
 });
 

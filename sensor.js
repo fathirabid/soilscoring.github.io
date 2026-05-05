@@ -280,11 +280,17 @@
     let connectionInterval; 
     let wasOnline = true; 
 
-    // --- VARIABEL AMBANG BATAS (THRESHOLD) DEFAULT ---
-    let batasNitrogen = 50;
-    let batasFosfor = 20;
-    let batasKalium = 100;
-    let batasPH = 5.5;
+    // --- VARIABEL AMBANG BATAS (THRESHOLD) DEFAULT (STANDAR UNIVERSAL) ---
+    // Disamakan persis dengan nilai default Offline di ESP32
+    let batasNitrogen = 30;
+    let batasFosfor   = 20;
+    let batasKalium   = 30;
+
+    // Rentang pH dan Kelembapan Universal
+    let batasPH       = 5.5; 
+    let batasPhMax    = 7.0; 
+    let batasHumMin   = 40;
+    let batasHumMax   = 70;
 
     // --- TARIK ATURAN DARI FIREBASE SECARA REAL-TIME ---
     database.ref('SoilSense/Settings/Thresholds').on('value', (snapshot) => {
@@ -294,6 +300,9 @@
             if(rules.p_min !== undefined) batasFosfor = rules.p_min;
             if(rules.k_min !== undefined) batasKalium = rules.k_min;
             if(rules.ph_min !== undefined) batasPH = rules.ph_min;
+            if(rules.ph_max !== undefined) batasPhMax = rules.ph_max;
+            if(rules.hum_min !== undefined) batasHumMin = rules.hum_min;
+            if(rules.hum_max !== undefined) batasHumMax = rules.hum_max;
         }
     });
 
@@ -647,24 +656,31 @@
                 // ANALISIS DINAMIS MENGGUNAKAN THRESHOLD DARI HALAMAN SETTINGS
                 // ==========================================================
                 
-                // 1. Kalkulasi pH (PEMBENAH TANAH) - Memakai variabel batasPH
+                // 1. Kalkulasi pH (PEMBENAH TANAH) - Memakai batasPH (Min) dan batasPhMax
                 if (data.ph < batasPH) { 
                     let gapPH = (batasPH - data.ph).toFixed(1);
-                    // Dosis rasio: 2 ton/ha untuk tiap kenaikan 1 poin pH
+                    // Dosis rasio: ±2000 kg/ha Kapur Dolomit untuk tiap kenaikan 1 poin pH
                     let dosisHa = gapPH * 2000; 
                     soilActions.push(`Kapur Dolomit (±${hitungDosisAktual(dosisHa)})`); 
                     warnings.push(`Asiditas Lahan Tinggi / Sangat Asam (pH ${data.ph})`); 
-                } else if (data.ph > batasPH + 1.5) { 
-                    soilActions.push(`Taburkan Belerang (Sulfur) / Pupuk Kandang`);
-                    warnings.push(`Lahan Terlalu Basa (pH ${data.ph})`);
+                } else if (data.ph > batasPhMax) { 
+                    let gapPH = (data.ph - batasPhMax).toFixed(1);
+                    // Dosis rasio: ±1000 kg/ha Sulfur/Belerang untuk tiap penurunan 1 poin pH
+                    let dosisHa = gapPH * 1000;
+                    soilActions.push(`Belerang / Sulfur Pertanian (±${hitungDosisAktual(dosisHa)})`);
+                    warnings.push(`Alkalinitas Lahan Tinggi / Terlalu Basa (pH ${data.ph})`);
                 }
 
-                // 2. Kalkulasi Kelembapan (MANAJEMEN AIR) - Standar Universal 40-70%
-                if (data.hum < 40) { 
-                    waterActions.push(`Segera nyalakan pompa irigasi / lakukan penyiraman lahan.`); 
+                // 2. Kalkulasi Kelembapan (MANAJEMEN AIR) - Memakai batasHumMin dan batasHumMax
+                if (data.hum < batasHumMin) { 
+                    waterActions.push(`Segera lakukan irigasi/penyiraman hingga kelembapan >${batasHumMin}%.`); 
                     warnings.push(`Kekeringan / Kelembapan Rendah (${data.hum}%)`); 
-                } else if (data.hum > 80) { 
+                } else if (data.hum > batasHumMax) { 
                     excesses.push(`Genangan / Kelembapan Tinggi (${data.hum}%)`);
+                    // Anda juga bisa menambahkan instruksi drainase jika genangan sangat parah
+                    if (data.hum > (batasHumMax + 10)) {
+                        waterActions.push(`Perbaiki saluran drainase/parit untuk membuang kelebihan air.`);
+                    }
                 }
 
                 // 3. Kalkulasi Nitrogen (PUPUK UREA) - Memakai variabel batasNitrogen
