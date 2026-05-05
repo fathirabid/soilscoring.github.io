@@ -64,7 +64,7 @@
             const pass = document.getElementById('loginPass').value;
 
             if(user === "admin" && pass === "pkm2026") {
-                isLoggedIn = true; // AKTIFKAN AKSES
+                isLoggedIn = true; 
 
                 // TAMBAHKAN BARIS INI UNTUK MENYIMPAN SESI KE BROWSER 
                  localStorage.setItem("adminLoggedIn", "true");
@@ -87,7 +87,6 @@
             }
         });
 
-        // Proses Logout
         // LOGIKA LOGOUT DENGAN KONFIRMASI
         function handleLogout() {
             if(confirm("Apakah Anda ingin keluar sistem?")) {
@@ -638,15 +637,20 @@
                     commodityText += `🚨 <strong>Belum ada yang cocok:</strong> Perbaiki pH atau unsur hara lahan Anda terlebih dahulu berdasarkan rekomendasi sistem.`;
                 }
 
-                let soilActions = [];  // KHUSUS untuk penanganan pH (Pembenah Tanah)
-                let waterActions = []; // KHUSUS untuk instruksi air
-                let fertActions = [];  // KHUSUS untuk daftar pupuk NPK
+                let soilActions = [];  
+                let waterActions = []; 
+                let fertActions = [];  
                 let warnings = [];
                 let excesses = []; 
 
-                // 1. Kalkulasi pH (PEMBENAH TANAH)
+                // ==========================================================
+                // ANALISIS DINAMIS MENGGUNAKAN THRESHOLD DARI HALAMAN SETTINGS
+                // ==========================================================
+                
+                // 1. Kalkulasi pH (PEMBENAH TANAH) - Memakai variabel batasPH
                 if (data.ph < batasPH) { 
                     let gapPH = (batasPH - data.ph).toFixed(1);
+                    // Dosis rasio: 2 ton/ha untuk tiap kenaikan 1 poin pH
                     let dosisHa = gapPH * 2000; 
                     soilActions.push(`Kapur Dolomit (±${hitungDosisAktual(dosisHa)})`); 
                     warnings.push(`Asiditas Lahan Tinggi / Sangat Asam (pH ${data.ph})`); 
@@ -655,7 +659,7 @@
                     warnings.push(`Lahan Terlalu Basa (pH ${data.ph})`);
                 }
 
-                // 2. Kalkulasi Kelembapan (MANAJEMEN AIR)
+                // 2. Kalkulasi Kelembapan (MANAJEMEN AIR) - Standar Universal 40-70%
                 if (data.hum < 40) { 
                     waterActions.push(`Segera nyalakan pompa irigasi / lakukan penyiraman lahan.`); 
                     warnings.push(`Kekeringan / Kelembapan Rendah (${data.hum}%)`); 
@@ -663,33 +667,37 @@
                     excesses.push(`Genangan / Kelembapan Tinggi (${data.hum}%)`);
                 }
 
-                // 3. Kalkulasi Nitrogen (PUPUK)
+                // 3. Kalkulasi Nitrogen (PUPUK UREA) - Memakai variabel batasNitrogen
                 if (data.nitrogen < batasNitrogen) { 
                     let defisitN = batasNitrogen - data.nitrogen;
+                    // Konversi Nitrogen ke berat Urea asli (Urea mengandung 46% N)
                     let dosisHa = (defisitN * 2) / 0.46;
                     fertActions.push(`Urea (±${hitungDosisAktual(dosisHa)})`); 
                     warnings.push(`Defisit Nitrogen (-${defisitN} mg/kg)`); 
-                } else if (data.nitrogen > maksNitrogen) {
+                } else if (data.nitrogen > (batasNitrogen * 1.5)) { 
+                    // Toksisitas dinilai jika melampaui batas * 1.5 (Sama dengan ESP32)
                     excesses.push(`Nitrogen Berlebih`);
                 }
 
-                // 4. Kalkulasi Fosfor (PUPUK)
+                // 4. Kalkulasi Fosfor (PUPUK SP-36) - Memakai variabel batasFosfor
                 if (data.fosfor < batasFosfor) { 
                     let defisitP = batasFosfor - data.fosfor;
+                    // Konversi Fosfor ke berat SP-36 asli (SP-36 mengandung 36% P)
                     let dosisHa = (defisitP * 2) / 0.36;
                     fertActions.push(`SP-36 (±${hitungDosisAktual(dosisHa)})`); 
                     warnings.push(`Defisit Fosfor (-${defisitP} mg/kg)`); 
-                } else if (data.fosfor > maksFosfor) {
+                } else if (data.fosfor > (batasFosfor * 1.5)) {
                     excesses.push(`Fosfor Berlebih`);
                 }
 
-                // 5. Kalkulasi Kalium (PUPUK)
+                // 5. Kalkulasi Kalium (PUPUK KCl) - Memakai variabel batasKalium
                 if (data.kalium < batasKalium) { 
                     let defisitK = batasKalium - data.kalium;
+                    // Konversi Kalium ke berat KCl asli (KCl mengandung 60% K)
                     let dosisHa = (defisitK * 2) / 0.60;
                     fertActions.push(`KCl (±${hitungDosisAktual(dosisHa)})`); 
                     warnings.push(`Defisit Kalium (-${defisitK} mg/kg)`); 
-                } else if (data.kalium > maksKalium) {
+                } else if (data.kalium > (batasKalium * 1.5)) {
                     excesses.push(`Kalium Berlebih`);
                 }
 
@@ -948,7 +956,6 @@ function resetDataToZero() {
     if(titleEl) titleEl.textContent = "Sensor Terputus";
     const descEl = document.getElementById('web-status-desc');
     if(descEl) descEl.textContent = "Menunggu alat dinyalakan...";
-
     const analysisList = document.getElementById('ai-analysis-list');
     if(analysisList) analysisList.innerHTML = '<li style="background:transparent; border:none;"><div class="ai-text" style="color:#888;">Menunggu transmisi data...</div></li>';
     const recomText = document.getElementById('ai-recom-text');
