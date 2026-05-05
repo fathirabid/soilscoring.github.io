@@ -196,7 +196,7 @@ function saveThresholds(e) {
     const kMin = parseInt(document.getElementById('thresh-k').value) || 0;
     const phMin = parseFloat(document.getElementById('thresh-ph').value) || 0;
 
-    const phMax= parseFloat(document.getElementById('thresh-ph-max').value) || 7.0;
+    const phMax = parseFloat(document.getElementById('thresh-ph-max').value) || 7.0;
     const humMin = parseFloat(document.getElementById('thresh-hum-min').value) || 40;
     const humMax = parseFloat(document.getElementById('thresh-hum-max').value) || 70;
 
