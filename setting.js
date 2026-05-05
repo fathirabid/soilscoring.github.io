@@ -196,9 +196,9 @@ function saveThresholds(e) {
     const kMin = parseInt(document.getElementById('thresh-k').value) || 0;
     const phMin = parseFloat(document.getElementById('thresh-ph').value) || 0;
 
-    const phMax= parseFloat(document.getElementById('thresh-ph-max').value = data.ph_max|| 7.0);
-    const humMin = parseFloat(document.getElementById('thresh-hum-min').value = data.hum_min || 40);
-    const humMax = parseFloat(document.getElementById('thresh-hum-max').value = data.hum_max || 70);
+    const phMax= parseFloat(document.getElementById('thresh-ph-max').value) || 7.0;
+    const humMin = parseFloat(document.getElementById('thresh-hum-min').value) || 40;
+    const humMax = parseFloat(document.getElementById('thresh-hum-max').value) || 70;
 
     // Kirim ke Firebase
     database.ref('SoilSense/Settings/Thresholds').set({
