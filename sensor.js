@@ -1,3 +1,4 @@
+
 // Initialize Icons
         feather.replace();
 
@@ -172,6 +173,8 @@
             n: [], p: [], k: [], ph: [], temp: [], hum: [], ec: []
         };
 
+        let historyLogData = [];
+
         const multiChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -218,43 +221,52 @@
             }
         });
 
-        // FUNGSI EKSPOR CSV
+        // FUNGSI EKSPOR CSV 
         function downloadCSV() {
-        // 1. Siapkan Header CSV
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Waktu,Nitrogen(N),Fosfor(P),Kalium(K),pH,Suhu,Kelembapan,EC\n";
+            // 1. Cek jika data kosong
+            if (historyLogData.length === 0) {
+                showToast('error', 'Gagal', 'Belum ada data yang direkam alat.');
+                return;
+            }
 
-        // 2. Gabungkan data dari array datasetValues yang sudah ada
-        labels.forEach((label, index) => {
-            let row = [
-                label,
-                datasetValues.n[index],
-                datasetValues.p[index],
-                datasetValues.k[index],
-                datasetValues.ph[index],
-                datasetValues.temp[index],
-                datasetValues.hum[index],
-                datasetValues.ec[index]
-            ].join(",");
-            csvContent += row + "\n";
-        });
+            // 2. Siapkan Header CSV (Gunakan Titik Koma untuk Excel Indonesia)
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Waktu;Nitrogen(N);Fosfor(P);Kalium(K);pH;Suhu;Kelembapan;EC\n";
 
-        // 3. Proses Download
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        
-        // Nama file berdasarkan tanggal saat ini
-        const fileName = `SoilSense_Report_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
-        link.setAttribute("download", fileName);
-        
-        document.body.appendChild(link);
-        link.click(); // Trigger klik otomatis
-        document.body.removeChild(link); // Hapus elemen temporary
+            // 3. Gabungkan seluruh data dari array historyLogData (Tanpa batas 60)
+            historyLogData.forEach((rowObj) => {
+                let row = [
+                    rowObj.waktu,
+                    rowObj.n,
+                    rowObj.p,
+                    rowObj.k,
+                    rowObj.ph,
+                    rowObj.temp,
+                    rowObj.hum,
+                    rowObj.ec
+                ].join(";"); // Pemisah titik koma ; agar terpisah otomatis di Excel
+                
+                csvContent += row + "\n";
+            });
 
-        // Berikan notifikasi sukses (menggunakan Toast yang sudah kita buat sebelumnya)
-        showToast('success', 'Berhasil!', 'Laporan CSV telah diunduh.');
-    }
+            // 4. Proses Download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            
+            // Nama file dengan format tanggal dan jam agar tidak tertukar
+            let now = new Date();
+            let timeStr = now.getHours() + "-" + now.getMinutes();
+            const fileName = `Log_Geolistrik_${now.toLocaleDateString().replace(/\//g, '-')}_Jam_${timeStr}.csv`;
+            
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Notifikasi sukses beserta jumlah baris yang berhasil ditarik
+            showToast('success', 'Berhasil!', `Laporan CSV (${historyLogData.length} baris) telah diunduh.`);
+        }
 
     // Status Login (Default: false)
     let isLoggedIn = false;
@@ -592,6 +604,18 @@
                 datasetValues.n.push(data.nitrogen); datasetValues.p.push(data.fosfor); datasetValues.k.push(data.kalium);
                 datasetValues.ph.push(data.ph); datasetValues.temp.push(data.temp); datasetValues.hum.push(data.hum); datasetValues.ec.push(data.ec);
                 multiChart.update();
+
+                // SIMPAN KE LOG TANPA BATAS UNTUK EKSPOR CSV GEOLISTRIK
+                historyLogData.push({
+                    waktu: timeLabel,
+                    n: data.nitrogen,
+                    p: data.fosfor,
+                    k: data.kalium,
+                    ph: data.ph,
+                    temp: data.temp,
+                    hum: data.hum,
+                    ec: data.ec
+                });
 
                 // --- DATABASE KEBUTUHAN KOMODITAS ---
                 // masih pakai data dummy
