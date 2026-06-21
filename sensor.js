@@ -344,7 +344,8 @@
         bawang: { nama: "Bawang Merah", n: 80, p: 40, k: 100, phMin: 6.0, phMax: 6.8 },
         padi: { nama: "Padi Sawah", n: 90, p: 30, k: 70, phMin: 5.5, phMax: 6.5 },
         jagung: { nama: "Jagung Manis", n: 130, p: 45, k: 110, phMin: 5.8, phMax: 7.0 },
-        singkong: { nama: "Singkong", n: 50, p: 20, k: 80, phMin: 4.5, phMax: 7.5 },
+        singkong: { nama: "Singkong", n: 50, p: 20, k: 80, phMin: 4.5, phMax: 7.5 }, 
+        kopi: { nama: "Kopi", n: 8, p: 12, k: 25, phMin: 5.5, phMax: 6.5, humMin: 40, humMax: 60 },   
 
         // --- KOMODITAS BARU (SAYURAN DAUN) ---
         Bayam: { nama: "Bayam", n: 120, p: 40, k: 130, phMin: 6.0, phMax: 7.0, humMin: 65, humMax: 85 },
