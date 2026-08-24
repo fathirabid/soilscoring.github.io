@@ -321,19 +321,19 @@
     // --- TAMBAHAN BARU: DATABASE KEBUTUHAN IDEAL TANAMAN ---
     let currentSensorData = { n: 0, p: 0, k: 0, ph: 0 };
     
-    // --- HELPER MESIN KONVERSI DOSIS LUAS LAHAN ---
+ // --- HELPER MESIN KONVERSI DOSIS LUAS LAHAN ---
     function hitungDosisAktual(dosisPerHa) {
-        let inputLuas = document.getElementById('luas-lahan');
-        // Jika kosong atau minus, paksa pakai 1 Hektar (10.000 m2) agar tidak error
-        let luasM2 = (inputLuas && inputLuas.value && inputLuas.value > 0) ? parseFloat(inputLuas.value) : 10000; 
+        // HANYA ambil memori yang sudah disahkan melalui tombol "Terapkan"
+        let savedLuas = localStorage.getItem("luasLahanTersimpan");
+        let luasM2 = (savedLuas && savedLuas > 0) ? parseFloat(savedLuas) : 10000; 
         
         let totalKg = (dosisPerHa / 10000) * luasM2;
         
         if (totalKg < 1) {
             let totalGram = Math.round(totalKg * 1000);
-            return `${totalGram} Gram`; // Jika di bawah 1 kg, ubah jadi Gram
+            return `${totalGram} Gram`; 
         } else {
-            return `${totalKg % 1 === 0 ? totalKg : totalKg.toFixed(1)} Kg`; // Jika di atas 1 kg
+            return `${totalKg % 1 === 0 ? totalKg : totalKg.toFixed(1)} Kg`;
         }
     }
     
@@ -934,24 +934,20 @@
             // Cek apakah sebelumnya pengguna pernah menyimpan angka luas lahan
             const savedLuas = localStorage.getItem("luasLahanTersimpan");
             if (savedLuas) {
-                inputLuas.value = savedLuas; // Kembalikan angka terakhir yang diketik
+                inputLuas.value = savedLuas; // Kembalikan angka terakhir
             }
 
-            // Pasang pendeteksi: Setiap kali angka diubah, langsung simpan ke memori browser!
-            inputLuas.addEventListener('input', function() {
-                localStorage.setItem("luasLahanTersimpan", this.value);
-            });
+            // AUTO-SAVE DIHAPUS DARI SINI
+            // Agar penyimpanan hanya terjadi saat tombol "Terapkan" diklik.
         }
 
         // 2. PEMULIHAN MEMORI: STATUS LOGIN ADMIN
         if (localStorage.getItem("adminLoggedIn") === "true") {
             isLoggedIn = true;
             
-            // Langsung sembunyikan tampilan tamu dan munculkan dashboard admin
             document.getElementById('guest-view').style.display = 'none';
             document.getElementById('admin-view').style.display = 'block';      
             
-            // Langsung jalankan penarikan data sensor tanpa perlu login ulang
             startSensorMonitoring(); 
         }
     });
@@ -1079,3 +1075,24 @@ window.addEventListener('load', handleProfilePosition);
 
 // 2. Jalankan secara REAL-TIME setiap kali ukuran layar ditarik/diubah (resize)
 window.addEventListener('resize', handleProfilePosition);
+
+// FUNGSI UNTUK TOMBOL "TERAPKAN" LUAS LAHAN
+function konfirmasiLuasLahan() {
+    const inputLuas = document.getElementById('luas-lahan');
+    if (inputLuas && inputLuas.value > 0) {
+        // Kunci angka ke dalam memori
+        localStorage.setItem("luasLahanTersimpan", inputLuas.value);
+        
+        // Beri tahu pengguna bahwa kalkulasi telah berubah
+        showToast('success', 'Luas Lahan Diterapkan', `Kalkulasi dosis pupuk disesuaikan untuk area ${inputLuas.value} m².`);
+        
+        // --- INI BARIS YANG HARUS DITAMBAHKAN ---
+        // Panggil ulang fitur Analisis Pakar secara instan agar teks dosis langsung berubah!
+        if (typeof analyzeSpecificPlant === 'function') {
+            analyzeSpecificPlant();
+        }
+        
+    } else {
+        showToast('error', 'Input Tidak Valid', 'Masukkan angka luas lahan yang benar (lebih dari 0).');
+    }
+}

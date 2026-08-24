@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>History | SoilSense Analytics</title>
+    <title>History | Soilsense Analytics</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" href="style.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -17,7 +18,7 @@
         <aside class="sidebar">
             <div class="sidebar-content">
                 <a href="index.html" class="logo-link">
-                    <div class="logo"><span class="icon">🌿</span><span class="text">Agroskor</span></div>
+                    <div class="logo"><span class="icon">🌿</span><span class="text">Smart Farming SMAN 2 Bandung</span></div>
                 </a>
 
                 <div class="datetime-wrapper">
@@ -41,7 +42,7 @@
                 </div>
                 <div id="admin-view" style="display: none;">
                     <div class="user-profile">
-                        <div class="avatar"><img src="https://ui-avatars.com/api/?name=Admin+Lahan&background=2ecc71&color=fff" alt="User"></div>
+                        <div class="avatar"><img src="images/icon-4399701_1280.png" alt="User"></div>
                         <div class="user-info">
                             <span class="user-name">Akun Admin</span>
                             <span class="user-status">Online</span>
@@ -161,6 +162,22 @@
                 <h2 style="color: var(--dark); margin-bottom: 10px;">Akses Riwayat Dibatasi</h2>
                 <p style="color: #7f8c8d; margin-bottom: 25px;">Data riwayat pertanian bersifat rahasia. Silakan masuk menggunakan akun admin.</p>
                 <button onclick="showLogin()" class="btn-login-main" style="max-width: 250px; margin: 0 auto;">Buka Kunci Akses</button>
+            </div>
+
+            <div class="chart-container-wrapper" id="history-chart-box" style="display: none; margin-bottom: 30px;">
+                <div class="chart-card box">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                        <h3><i data-feather="trending-up"></i> Tren Kesuburan Lahan</h3>
+                        <div class="chart-filters">
+                            <button class="filter-btn active" onclick="updateChartFilter('today')">Hari Ini</button>
+                            <button class="filter-btn" onclick="updateChartFilter('week')">7 Hari</button>
+                            <button class="filter-btn" onclick="updateChartFilter('month')">30 Hari</button>
+                        </div>
+                    </div>
+                    <div class="canvas-wrapper" style="height: 350px;">
+                        <canvas id="historyTrendChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div class="box" id="history-content-box" style="display: none;">

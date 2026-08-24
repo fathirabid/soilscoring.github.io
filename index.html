@@ -24,7 +24,7 @@
                 <a href="index.html" class="logo-link">
                     <div class="logo">
                         <span class="icon">🌿</span>
-                        <span class="text">Agroskor</span>
+                        <span class="text">Smart Farming SMAN 2 Bandung</span>
                     </div>
                 </a>
 
@@ -53,7 +53,7 @@
                 <div id="admin-view" style="display: none;">
                     <div class="user-profile">
                         <div class="avatar">
-                            <img src="https://ui-avatars.com/api/?name=Admin+Lahan&background=2ecc71&color=fff" alt="User">
+                            <img src="images/icon-4399701_1280.png" alt="User">
                         </div>
                         <div class="user-info">
                             <span class="user-name">Akun Admin</span>
@@ -135,7 +135,7 @@
             <header class="top-bar">
                 <div class="header-title">
                     <h1>Dashboard Analitik</h1>
-                    <p>Pemantauan Real-time Lahan Pertanian dengan Sensor IoT (Standard: Balai Penelitian Tanah)</p>
+                    <p>Pemantauan Real-time Lahan Pertanian dengan Sensor IoT</p>
                 </div>
                 <div class="status-indicator" id="connection-status">
                     <span class="dot" id="connection-dot"></span> 
@@ -225,10 +225,19 @@
                     <i data-feather="map"></i>
                     <h3>Luas Lahan Aktual:</h3>
                 </div>
-                <div class="land-input-wrapper">
-                    <input type="number" id="luas-lahan" placeholder="Contoh: 500" value="0" onchange="if(typeof analyzeSpecificPlant === 'function') analyzeSpecificPlant();">
-                    <span>m²</span>
+                
+                <div class="land-input-group">
+                    <div class="land-input-wrapper">
+                        <!-- Atribut onchange dihapus dari sini -->
+                        <input type="number" id="luas-lahan" placeholder="Contoh: 500" value="0">
+                        <span>m²</span>
+                    </div>
+                    <!-- Tombol Terapkan ditambahkan -->
+                    <button id="btn-konfirmasi-lahan" class="btn-confirm-land" onclick="konfirmasiLuasLahan()">
+                        <i data-feather="check-circle"></i> Terapkan
+                    </button>
                 </div>
+
                 <p class="land-area-desc">Masukkan luas lahan. AI akan mengonversi dosis Hektar menjadi <strong>Gram/Kilogram</strong> yang 100% presisi untuk lahan Anda.</p>
             </div>
 

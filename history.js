@@ -17,14 +17,14 @@ setInterval(updateTime, 1000); updateTime();
 // 2. KONFIGURASI FIREBASE
 // ==========================================================
 const firebaseConfig = {
-    apiKey: "AIzaSyBDqfGHqjAxHWhbPdyzXQgR9W2oZsz4zrQ",
-    authDomain: "soilsense-project-fc64f.firebaseapp.com",
-    databaseURL: "https://soilsense-project-fc64f-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "soilsense-project-fc64f",
-    storageBucket: "soilsense-project-fc64f.firebasestorage.app",
-    messagingSenderId: "926337999147",
-    appId: "1:926337999147:web:275d3ed44c7efd5b01e56e",
-    measurementId: "G-ZRMNVTPZPW"
+  apiKey: "AIzaSyBDqfGHqjAxHWhbPdyzXQgR9W2oZsz4zrQ",
+  authDomain: "soilsense-project-fc64f.firebaseapp.com",
+  databaseURL: "https://soilsense-project-fc64f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "soilsense-project-fc64f",
+  storageBucket: "soilsense-project-fc64f.firebasestorage.app",
+  messagingSenderId: "926337999147",
+  appId: "1:926337999147:web:275d3ed44c7efd5b01e56e",
+  measurementId: "G-ZRMNVTPZPW"
 };
 
 if (!firebase.apps.length) {
@@ -146,6 +146,7 @@ function applyAdminState(loginStatus) {
     const guestWarning = document.getElementById('guest-warning');
     
     const histBox = document.getElementById('history-content-box');
+    const chartBox = document.getElementById('history-chart-box'); // <-- AMBIL KOTAK GRAFIK
     const btnExport = document.getElementById('btn-export');
     const btnClear = document.getElementById('btn-clear');
     
@@ -155,6 +156,7 @@ function applyAdminState(loginStatus) {
         if (guestWarning) guestWarning.style.display = 'none';
         
         if (histBox) histBox.style.display = 'block';
+        if (chartBox) chartBox.style.display = 'block'; // <-- TAMPILKAN GRAFIK DI SINI
         if (btnExport) btnExport.style.display = 'flex';
         if (btnClear) btnClear.style.display = 'flex';
         
@@ -165,6 +167,7 @@ function applyAdminState(loginStatus) {
         if (guestWarning) guestWarning.style.display = 'block';
         
         if (histBox) histBox.style.display = 'none';
+        if (chartBox) chartBox.style.display = 'none'; // <-- SEMBUNYIKAN GRAFIK JIKA LOGOUT
         if (btnExport) btnExport.style.display = 'none';
         if (btnClear) btnClear.style.display = 'none';
         
@@ -172,7 +175,6 @@ function applyAdminState(loginStatus) {
         if (tbody) tbody.innerHTML = ''; // Kosongkan tabel demi keamanan
     }
 }
-
 
 // ==========================================================
 // 4. FUNGSI KHUSUS HALAMAN HISTORY (TIDAK ADA YANG DIRUBAH)
@@ -183,7 +185,7 @@ function loadHistoryData() {
     if (!tbody) return;
     tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Mengambil data dari server awan...</td></tr>';
     
-    database.ref('SoilSense/History').limitToLast(50).on('value', (snapshot) => {
+    database.ref('SoilSense/History').limitToLast(200).on('value', (snapshot) => {
         if (!isLoggedIn) return; 
         
         tbody.innerHTML = ''; 
@@ -224,8 +226,11 @@ function loadHistoryData() {
                 `;
                 tbody.appendChild(tr);
             });
+            updateChartFilter(currentFilterRange);
+
         } else {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Belum ada riwayat. Biarkan alat menyala beberapa menit untuk menyimpan log pertama.</td></tr>';
+            renderHistoryChart([]);
         }
     });
 }
@@ -391,3 +396,104 @@ window.addEventListener('load', handleProfilePosition);
 
 // 2. Jalankan secara REAL-TIME setiap kali ukuran layar ditarik/diubah (resize)
 window.addEventListener('resize', handleProfilePosition);
+
+// ==========================================================
+// 5. MESIN GRAFIK TREN HISTORY (SMART FILTERING)
+// ==========================================================
+let historyTrendChart = null;
+let currentFilterRange = 'today';
+
+function updateChartFilter(range) {
+    currentFilterRange = range;
+    
+    // Update warna tombol aktif
+    const btns = document.querySelectorAll('.filter-btn');
+    if (btns.length > 0) {
+        btns.forEach(btn => btn.classList.remove('active'));
+        if(range === 'today') btns[0].classList.add('active');
+        if(range === 'week') btns[1].classList.add('active');
+        if(range === 'month') btns[2].classList.add('active');
+    }
+
+    if(!historyDataArray || historyDataArray.length === 0) return;
+
+    const now = Date.now();
+    let timeLimit = 0;
+    
+    if (range === 'today') timeLimit = now - (24 * 60 * 60 * 1000);
+    else if (range === 'week') timeLimit = now - (7 * 24 * 60 * 60 * 1000);
+    else if (range === 'month') timeLimit = now - (30 * 24 * 60 * 60 * 1000);
+
+    // Filter dan urutkan data dari yang Terlama -> Terbaru untuk grafik (Kiri ke Kanan)
+    let filteredData = historyDataArray.filter(d => {
+        let ts = parseInt(d.lastUpdate);
+        if(ts < 2000000000) ts *= 1000;
+        return ts >= timeLimit;
+    }).reverse(); 
+
+    // DOWNSAMPLING: Agar grafik tidak error karena ribuan titik data
+    let sampledData = [];
+    if (filteredData.length > 60) {
+        let step = Math.ceil(filteredData.length / 60);
+        for(let i=0; i<filteredData.length; i+=step) sampledData.push(filteredData[i]);
+        // Pastikan data paling akhir ikut masuk
+        if(sampledData[sampledData.length-1] !== filteredData[filteredData.length-1]) {
+            sampledData.push(filteredData[filteredData.length-1]);
+        }
+    } else {
+        sampledData = filteredData;
+    }
+
+    renderHistoryChart(sampledData);
+}
+
+function renderHistoryChart(dataArr) {
+    const ctx = document.getElementById('historyTrendChart').getContext('2d');
+    
+    // 1. Tambahkan penampung array untuk dpH dan dHum
+    const lbls = [], dScore = [], dN = [], dP = [], dK = [], dpH = [], dHum = [];
+
+    dataArr.forEach(d => {
+        let ts = parseInt(d.lastUpdate);
+        if(ts < 2000000000) ts *= 1000;
+        const dt = new Date(ts);
+        
+        // Format Label: Jam untuk "Hari Ini", Tanggal untuk "Minggu/Bulan"
+        let timeLbl = currentFilterRange === 'today' ? 
+            dt.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) : 
+            dt.toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
+        
+        lbls.push(timeLbl);
+        dScore.push(d.score);
+        dN.push(d.nitrogen);
+        dP.push(d.fosfor);
+        dK.push(d.kalium);
+        
+        // 2. Masukkan angka dari Firebase ke dalam penampung
+        dpH.push(d.ph);
+        dHum.push(d.hum);
+    });
+
+    if (historyTrendChart) historyTrendChart.destroy(); // Bersihkan kanvas lama
+
+    historyTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: lbls,
+            datasets: [
+                { label: ' 🌟 Skor', data: dScore, borderColor: '#1e293b', backgroundColor: 'rgba(30, 41, 59, 0.05)', borderWidth: 3, fill: true, tension: 0.4 },
+                { label: ' Nitrogen (N)', data: dN, borderColor: '#2ecc71', borderWidth: 2, tension: 0.4, borderDash: [5, 5] },
+                { label: ' Fosfor (P)', data: dP, borderColor: '#e67e22', borderWidth: 2, tension: 0.4, borderDash: [5, 5] },
+                { label: ' Kalium (K)', data: dK, borderColor: '#3498db', borderWidth: 2, tension: 0.4, borderDash: [5, 5] },
+                { label: ' pH Tanah', data: dpH, borderColor: '#f1c40f', borderWidth: 2, tension: 0.4 },
+                { label: ' Kelembapan (%)', data: dHum, borderColor: '#9b59b6', borderWidth: 2, tension: 0.4 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } },
+            scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }
+        }
+    });
+}
