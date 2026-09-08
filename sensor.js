@@ -619,13 +619,8 @@
                 });
 
                 // --- DATABASE KEBUTUHAN KOMODITAS ---
-                // masih pakai data dummy
                 const cropDatabase = [
-                    { name: "Padi Sawah", phMin: 5.5, phMax: 6.5, n: 45, p: 20, k: 30 },
-                    { name: "Bawang Merah", phMin: 5.6, phMax: 7.0, n: 80, p: 40, k: 40 },
-                    { name: "Cabai Merah", phMin: 6.0, phMax: 7.0, n: 100, p: 50, k: 50 },
-                    { name: "Jagung Manis", phMin: 5.8, phMax: 7.0, n: 60, p: 30, k: 40 },
-                    { name: "Singkong (Tangguh)", phMin: 4.5, phMax: 8.0, n: 30, p: 10, k: 20 }
+                    { name: "Strawberry", phMin: 5.5, phMax: 6.5, n: 50, p: 30, k: 40 },
                 ];
 
                 // --- REKOMENDASI AI CERDAS BERBASIS PARAMETER SPESIFIK ---
